@@ -1,0 +1,38 @@
+
+###
+# Fonction principale
+##
+_olixsh_module()
+{
+    local CUR PREV PREV2
+    COMPREPLY=()
+    PREV="${COMP_WORDS[COMP_CWORD-1]}"
+    PREV2="${COMP_WORDS[COMP_CWORD-2]}"
+
+    case "${PREV2}" in
+        install)
+            return 0
+            ;;
+    esac
+
+    case "${PREV}" in
+        debian)
+            _olixsh_module_actions
+            return 0
+            ;;
+    esac
+}
+
+
+###
+# Liste des actions du module DEBIAN
+##
+_olixsh_module_actions()
+{
+    local CUR ACTIONS
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    ACTIONS="help"
+
+    COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
+}
+
