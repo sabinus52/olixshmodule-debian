@@ -20,6 +20,10 @@ _olixsh_module()
             _olixsh_module_actions
             return 0
             ;;
+        init)
+            _olixsh_module_init
+            return 0
+            ;;
     esac
 }
 
@@ -31,8 +35,19 @@ _olixsh_module_actions()
 {
     local CUR ACTIONS
     CUR="${COMP_WORDS[COMP_CWORD]}"
-    ACTIONS="help"
+    ACTIONS="init help"
 
     COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
 }
 
+
+###
+# Action INIT du module DEBIAN
+##
+_olixsh_module_init()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+
+    COMPREPLY=( $(compgen -W "--force" -- ${CUR}) )
+}

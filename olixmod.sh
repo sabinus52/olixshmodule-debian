@@ -11,6 +11,14 @@ OLIX_MODULE_NAME="debian"
 # Version en cours d'Ubuntu
 OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -sc)
 
+# Emplacement du fichier de configuration des paramètres (/etc/olixsh/debian.conf)
+OLIX_MODULE_DEBIAN_CONFIG=
+
+# Addresse du serveur distant du dépôt de la configuration (/etc/olixsh/debian.conf | $param)
+OLIX_MODULE_DEBIAN_SYNC_SERVER=
+# Port du serveur distant du dépôt de la configuration (/etc/olixsh/debian.conf | --port=)
+OLIX_MODULE_DEBIAN_SYNC_PORT=22
+
 
 
 ###

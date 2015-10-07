@@ -20,5 +20,6 @@ function module_debian_usage_main()
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}<action>${CVOID}"
     echo
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
+    echo -e "${Cjaune} init    ${CVOID}  : Initialisation du module"
     echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
 }
