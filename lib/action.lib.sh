@@ -48,3 +48,81 @@ function module_debian_action_init()
     echo -e "${Cvert}Action terminée avec succès${CVOID}"
     return 0
 }
+
+
+###
+# Synchronisation de la configuration des packages
+##
+function module_debian_action_synccfg()
+{
+    logger_debug "module_debian_action_synccfg ($@)"
+    local ACTION=$1
+    local ADDRESS=$2
+    local CONFIGDIR=$3
+
+    # Affichage de l'aide
+    [ $# -lt 1 ] && module_debian_usage_synccfg && core_exit 1
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    # Charge la configuration du module
+    config_loadConfigQuietModule "${OLIX_MODULE_NAME}"
+    
+    # Test des paramètres saisies
+    [[ -z ${ADDRESS} ]] && ADDRESS=${OLIX_MODULE_DEBIAN_SYNC_SERVER}
+    if [[ -z ${ADDRESS} ]]; then
+        logger_critical "Le paramètre de l'adresse du serveur est manquant"
+    fi
+    [[ -z ${OLIX_MODULE_DEBIAN_SYNC_PORT} ]] && OLIX_MODULE_DEBIAN_SYNC_PORT=22
+    logger_debug "ADDRESS=${ADDRESS}"
+    logger_debug "OLIX_MODULE_DEBIAN_SYNC_PORT=${OLIX_MODULE_DEBIAN_SYNC_PORT}"
+    
+    # En fonction de l'action PUSH ou PULL
+    case ${ACTION} in
+        push)
+            echo "@TODO" #module_debian_action_synccfg_push "${ADDRESS}"
+            ;;
+        pull)
+            module_debian_action_synccfg_pull "${ADDRESS}" "${CONFIGDIR}"
+            ;;
+        *)  logger_critical "Action \"${ACTION}\" inconnu"
+    esac
+    
+    case $? in
+        0)  echo -e "${Cvert}Action terminée avec succès${CVOID}";;
+        52) echo -e "${Cjaune}Action abordée${CVOID}";;
+        *)  echo -e "${Crouge}Action terminée avec des erreurs${CVOID}"
+            logger_critical;;
+    esac
+}
+
+
+###
+# Synchronisation de la configuration des packages par l'action PULL
+# @param $1 : Adresse source de la config
+# @param $2 : Chemin de destination
+##
+function module_debian_action_synccfg_pull()
+{
+    logger_debug "module_debian_action_synccfg_pull ($1, $2)"
+    local ADDRESS=$1
+    local CONFIGDIR=$2
+
+    # Test le paramètre de chemin de destination
+    [[ -z ${CONFIGDIR} ]] && CONFIGDIR=$(dirname ${OLIX_MODULE_DEBIAN_CONFIG} 2> /dev/null)
+    if [[ -z ${CONFIGDIR} ]]; then
+        logger_critical "Le paramètre du dossier contenant la configuration du serveur est manquant"
+    fi
+    logger_debug "CONFIGDIR=${CONFIGDIR}"
+
+    echo -e "${CBLANC}Récupérer la configuration${CVOID} depuis le serveur ${CCYAN}${ADDRESS}${CVOID} vers ${CCYAN}${CONFIGDIR}${CVOID}"
+    stdin_readYesOrNo "Continuer la récupération de la config" false
+    [[ ${OLIX_STDIN_RETURN} == false ]] && return 52
+
+    file_synchronize ${OLIX_MODULE_DEBIAN_SYNC_PORT} ${ADDRESS} ${CONFIGDIR}
+    return $?
+}
+

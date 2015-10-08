@@ -35,7 +35,7 @@ olixmod_require_module()
 ##
 olixmod_require_binary()
 {
-    echo -e ""
+    echo -e "rsync"
 }
 
 

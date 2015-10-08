@@ -24,6 +24,10 @@ _olixsh_module()
             _olixsh_module_init
             return 0
             ;;
+        synccfg)
+            _olixsh_module_synccfg_actions
+            return 0
+            ;;
     esac
 }
 
@@ -35,7 +39,7 @@ _olixsh_module_actions()
 {
     local CUR ACTIONS
     CUR="${COMP_WORDS[COMP_CWORD]}"
-    ACTIONS="init help"
+    ACTIONS="init synccfg help"
 
     COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
 }
@@ -50,4 +54,17 @@ _olixsh_module_init()
     CUR="${COMP_WORDS[COMP_CWORD]}"
 
     COMPREPLY=( $(compgen -W "--force" -- ${CUR}) )
+}
+
+
+###
+# Liste des actions de l'action SYNCCFG du module DEBIAN
+##
+_olixsh_module_synccfg_actions()
+{
+    local CUR ACTION
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    ACTION="--port pull push help"
+
+    COMPREPLY=( $(compgen -W "${ACTION}" -- ${CUR}) )
 }
