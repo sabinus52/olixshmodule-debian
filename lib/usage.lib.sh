@@ -35,7 +35,7 @@ function module_debian_usage_install()
     logger_debug "module_debian_usage_install ()"
     stdout_printVersion
     echo
-    echo -e "Installation d'un serveur Ubuntu ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID} et ses packages"
+    echo -e "Installation d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID} et ses packages"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}install${CVOID} ${CBLANC}<packages...> [OPTIONS]${CVOID}"
     echo
@@ -60,6 +60,36 @@ function module_debian_usage_install()
     echo -e "${Cjaune} monit      ${CVOID} : Installation et configuration du monitoring"
     echo -e "${Cjaune} snmpd      ${CVOID} : Installation et configuration du protocol de gestion du réseau"
     echo -e "${Cjaune} tools      ${CVOID} : Installation d'outils supplémentaire"
+    echo -e "${Cjaune} help       ${CVOID} : Affiche cet écran"
+}
+
+
+###
+# Usage de l'action CONFIG
+##
+function module_debian_usage_config()
+{
+    logger_debug "module_debian_usage_config ()"
+    stdout_printVersion
+    echo
+    echo -e "Configuration des packages d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}config${CVOID} ${CBLANC}<package>${CVOID}"
+    echo
+    echo -e "${CJAUNE}Liste des PACKAGES disponibles${CVOID} :"
+    echo -e "${Cjaune} apache     ${CVOID} : Configuration d'Apache"
+    echo -e "${Cjaune} php        ${CVOID} : Configuration des modules PHP"
+    echo -e "${Cjaune} mysql      ${CVOID} : Configuration du MySQL"
+    echo -e "${Cjaune} postgres   ${CVOID} : Configuration de PostgreSQL"
+    echo -e "${Cjaune} nfs        ${CVOID} : Configuration du partage NFS"
+    echo -e "${Cjaune} samba      ${CVOID} : Configuration du partage Samba"
+    echo -e "${Cjaune} ftp        ${CVOID} : Configuration du serveur FTP"
+    echo -e "${Cjaune} postfix    ${CVOID} : Configuration du transport de mail"
+    echo -e "${Cjaune} collectd   ${CVOID} : Configuration des stats serveur"
+    echo -e "${Cjaune} logwatch   ${CVOID} : Configuration d'analyseur de log"
+    echo -e "${Cjaune} monit      ${CVOID} : Configuration du monitoring"
+    echo -e "${Cjaune} snmpd      ${CVOID} : Configuration du protocol de gestion du réseau"
+    echo -e "${Cjaune} tools      ${CVOID} : Configuration d'outils supplémentaires"
     echo -e "${Cjaune} help       ${CVOID} : Affiche cet écran"
 }
 

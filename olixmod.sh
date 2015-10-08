@@ -16,6 +16,7 @@ OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false
 
 # Liste des packages en fonction de l'action à traiter
 OLIX_MODULE_DEBIAN_PACKAGES_INSTALL="network virtualbox vmware users apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
+OLIX_MODULE_DEBIAN_PACKAGES_CONFIG="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
 
 # Emplacement du fichier de configuration des paramètres (/etc/olixsh/debian.conf)
 OLIX_MODULE_DEBIAN_CONFIG=
