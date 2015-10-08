@@ -11,6 +11,12 @@ OLIX_MODULE_NAME="debian"
 # Version en cours d'Ubuntu
 OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -sc)
 
+# Si on doit utiliser tous les packages
+OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false
+
+# Liste des packages en fonction de l'action à traiter
+OLIX_MODULE_DEBIAN_PACKAGES_INSTALL="network virtualbox vmware users apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
+
 # Emplacement du fichier de configuration des paramètres (/etc/olixsh/debian.conf)
 OLIX_MODULE_DEBIAN_CONFIG=
 

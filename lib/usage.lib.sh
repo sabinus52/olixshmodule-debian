@@ -21,8 +21,46 @@ function module_debian_usage_main()
     echo
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init    ${CVOID}  : Initialisation du module"
+    echo -e "${Cjaune} install ${CVOID}  : Installation d'un package"
     echo -e "${Cjaune} synccfg ${CVOID}  : Synchronisation de la configuration actuelle vers un autre serveur"
     echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
+}
+
+
+###
+# Usage de l'action INSTALL
+##
+function module_debian_usage_install()
+{
+    logger_debug "module_debian_usage_install ()"
+    stdout_printVersion
+    echo
+    echo -e "Installation d'un serveur Ubuntu ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID} et ses packages"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}install${CVOID} ${CBLANC}<packages...> [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -e "${CBLANC} --all|-a   ${CVOID} : Pour installer le serveur complet avec tous ses packages"
+    echo
+    echo -e "${CJAUNE}Liste des PACKAGES disponibles${CVOID} :"
+    echo -e "${Cjaune} network    ${CVOID} : Configuration du réseau"
+    echo -e "${Cjaune} users      ${CVOID} : Création des utilisateurs"
+    echo -e "${Cjaune} virtualbox ${CVOID} : Installation et configuration des Tools Virtualbox"
+    echo -e "${Cjaune} vmware     ${CVOID} : Installation et configuration des VMware Tools"
+    echo -e "${Cjaune} apache     ${CVOID} : Installation et configuration d'Apache"
+    echo -e "${Cjaune} php        ${CVOID} : Installation et configuration des modules PHP"
+    echo -e "${Cjaune} mysql      ${CVOID} : Installation et configuration du MySQL"
+    echo -e "${Cjaune} postgres   ${CVOID} : Installation et configuration de PostgreSQL"
+    echo -e "${Cjaune} nfs        ${CVOID} : Installation et configuration du partage NFS"
+    echo -e "${Cjaune} samba      ${CVOID} : Installation et configuration du partage Samba"
+    echo -e "${Cjaune} ftp        ${CVOID} : Installation et configuration du serveur FTP"
+    echo -e "${Cjaune} postfix    ${CVOID} : Installation et configuration du transport de mail"
+    echo -e "${Cjaune} collectd   ${CVOID} : Installation et configuration des stats serveur"
+    echo -e "${Cjaune} logwatch   ${CVOID} : Installation et configuration d'analyseur de log"
+    echo -e "${Cjaune} monit      ${CVOID} : Installation et configuration du monitoring"
+    echo -e "${Cjaune} snmpd      ${CVOID} : Installation et configuration du protocol de gestion du réseau"
+    echo -e "${Cjaune} tools      ${CVOID} : Installation d'outils supplémentaire"
+    echo -e "${Cjaune} help       ${CVOID} : Affiche cet écran"
 }
 
 
