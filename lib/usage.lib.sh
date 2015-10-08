@@ -22,6 +22,7 @@ function module_debian_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init    ${CVOID}  : Initialisation du module"
     echo -e "${Cjaune} install ${CVOID}  : Installation d'un package"
+    echo -e "${Cjaune} update  ${CVOID}  : Mise à jour du système"
     echo -e "${Cjaune} synccfg ${CVOID}  : Synchronisation de la configuration actuelle vers un autre serveur"
     echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
 }

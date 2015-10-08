@@ -121,6 +121,24 @@ function module_debian_action_config()
 
 
 ###
+# Mise à jour du système
+##
+function module_debian_action_update()
+{
+    logger_debug "module_debian_action_update ($@)"
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    module_debian_executeService main apt-update
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+}
+
+
+###
 # Synchronisation de la configuration des packages
 ##
 function module_debian_action_synccfg()
