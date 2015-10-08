@@ -139,6 +139,40 @@ function module_debian_action_update()
 
 
 ###
+# Sauvegarde de la configuration des packages
+##
+function module_debian_action_savecfg()
+{
+    logger_debug "module_debian_action_savecfg ($@)"
+    local I
+
+    # Affichage de l'aide
+    [ $# -lt 1 ] && module_debian_usage_savecfg && core_exit 1
+
+    # Test si ROOT
+    logger_info "Test si root"
+    core_checkIfRoot
+    [[ $? -ne 0 ]] && logger_critical "Seulement root peut executer cette action"
+
+    # Charge le fichier de configuration contenant les paramètes necessaires à l'installation
+    module_debian_loadConfiguration
+    [[ ${OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE} == true ]] && OLIX_MODULE_DEBIAN_PACKAGES=${OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG}
+
+    # Configuration des services demandés
+    for I in ${OLIX_MODULE_DEBIAN_PACKAGES}; do
+        logger_info "Sauvegarde de la configuration de '${I}'"
+        if ! $(core_contains ${I} "${OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG}"); then
+            logger_warning "Apparement le package '${I}' est inconnu !"
+        else
+            module_debian_executeService savecfg ${I}
+        fi
+    done
+
+    echo -e "${Cvert}Action terminée avec succès${CVOID}"
+}
+
+
+###
 # Synchronisation de la configuration des packages
 ##
 function module_debian_action_synccfg()

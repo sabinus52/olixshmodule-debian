@@ -22,7 +22,9 @@ function module_debian_usage_main()
     echo -e "${CJAUNE}Liste des ACTIONS disponibles${CVOID} :"
     echo -e "${Cjaune} init    ${CVOID}  : Initialisation du module"
     echo -e "${Cjaune} install ${CVOID}  : Installation d'un package"
+    echo -e "${Cjaune} config  ${CVOID}  : Installation des fichiers de configuration d'un package"
     echo -e "${Cjaune} update  ${CVOID}  : Mise à jour du système"
+    echo -e "${Cjaune} savecfg ${CVOID}  : Sauvegarde de la configuration actuelle"
     echo -e "${Cjaune} synccfg ${CVOID}  : Synchronisation de la configuration actuelle vers un autre serveur"
     echo -e "${Cjaune} help    ${CVOID}  : Affiche cet écran"
 }
@@ -91,6 +93,39 @@ function module_debian_usage_config()
     echo -e "${Cjaune} monit      ${CVOID} : Configuration du monitoring"
     echo -e "${Cjaune} snmpd      ${CVOID} : Configuration du protocol de gestion du réseau"
     echo -e "${Cjaune} tools      ${CVOID} : Configuration d'outils supplémentaires"
+    echo -e "${Cjaune} help       ${CVOID} : Affiche cet écran"
+}
+
+
+###
+# Usage de l'action SAVECFG
+##
+function module_debian_usage_savecfg()
+{
+    logger_debug "module_debian_usage_savecfg ()"
+    stdout_printVersion
+    echo
+    echo -e "Sauvegarde de la configuration des services d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
+    echo
+    echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}savecfg${CVOID} ${CBLANC}<packages...> [OPTIONS]${CVOID}"
+    echo
+    echo -e "${Ccyan}OPTIONS${CVOID}"
+    echo -e "${CBLANC} --all|-a   ${CVOID} : Pour sauvegarder toutes les configuration des packages"
+    echo
+    echo -e "${CJAUNE}Liste des PACKAGES disponibles${CVOID} :"
+    echo -e "${Cjaune} apache     ${CVOID} : Sauvegarde de la configuration d'Apache"
+    echo -e "${Cjaune} php        ${CVOID} : Sauvegarde de la configuration des modules PHP"
+    echo -e "${Cjaune} mysql      ${CVOID} : Sauvegarde de la configuration de MySQL"
+    echo -e "${Cjaune} postgres   ${CVOID} : Sauvegarde de la configuration de PostgreSQL"
+    echo -e "${Cjaune} nfs        ${CVOID} : Sauvegarde de la configuration du partage NFS"
+    echo -e "${Cjaune} samba      ${CVOID} : Sauvegarde de la configuration du partage Samba"
+    echo -e "${Cjaune} ftp        ${CVOID} : Sauvegarde de la configuration du serveur FTP"
+    echo -e "${Cjaune} postfix    ${CVOID} : Sauvegarde de la configuration du transport de mail"
+    echo -e "${Cjaune} collectd   ${CVOID} : Sauvegarde de la configuration des stats serveur"
+    echo -e "${Cjaune} logwatch   ${CVOID} : Sauvegarde de la configuration d'analyseur de log"
+    echo -e "${Cjaune} monit      ${CVOID} : Sauvegarde de la configuration du monitoring"
+    echo -e "${Cjaune} snmpd      ${CVOID} : Sauvegarde de la configuration du protocol de gestion du réseau"
+    echo -e "${Cjaune} tools      ${CVOID} : Sauvegarde de la configuration des outils supplémentaires"
     echo -e "${Cjaune} help       ${CVOID} : Affiche cet écran"
 }
 

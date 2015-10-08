@@ -32,6 +32,10 @@ _olixsh_module()
             _olixsh_module_config_packages
             return 0
             ;;
+        savecfg)
+            _olixsh_module_savecfg_packages
+            return 0
+            ;;
         synccfg)
             _olixsh_module_synccfg_actions
             return 0
@@ -47,7 +51,7 @@ _olixsh_module_actions()
 {
     local CUR ACTIONS
     CUR="${COMP_WORDS[COMP_CWORD]}"
-    ACTIONS="init install config update synccfg help"
+    ACTIONS="init install config update savecfg synccfg help"
 
     COMPREPLY=( $(compgen -W "${ACTIONS}" -- ${CUR}) )
 }
@@ -86,6 +90,19 @@ _olixsh_module_config_packages()
     local CUR PACKAGES
     CUR="${COMP_WORDS[COMP_CWORD]}"
     PACKAGES="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools help"
+
+    COMPREPLY=( $(compgen -W "${PACKAGES}" -- ${CUR}) )
+}
+
+
+###
+# Liste des packages de l'action SAVECFG du module DEBIAN
+##
+_olixsh_module_savecfg_packages()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PACKAGES="--all apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools help"
 
     COMPREPLY=( $(compgen -W "${PACKAGES}" -- ${CUR}) )
 }
