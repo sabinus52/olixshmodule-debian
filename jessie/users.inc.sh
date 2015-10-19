@@ -17,7 +17,7 @@
 # @package olixsh
 # @module debian
 # @author Olivier <sabinus52@gmail.com>
-# @version 14.04
+# @version 8 (jessie)
 ##
 
 
