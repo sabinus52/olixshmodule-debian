@@ -77,7 +77,7 @@ debian_include_install()
     if [[ ${OLIX_STDIN_RETURN} == true ]]; then
         debian_include_network_config
         echo -e "Adresse ${CCYAN}${ADDRIP}${CVOID} à modifier : ${CVERT}OK ...${CVOID}"
-        debian_include_restart
+        #debian_include_restart
     fi
     return 0
 }
