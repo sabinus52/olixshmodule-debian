@@ -92,7 +92,7 @@ debian_include_install()
     logger_debug "debian_include_install (mysql)"
 
     logger_info "Installation des packages MYSQL"
-    apt-get --yes install mariadb-server
+    apt-get --yes install mysql-server
     [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages MYSQL"
     
     local MYSQL_PATH=$(yaml_getConfig "mysql.path")
