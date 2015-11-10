@@ -7,10 +7,11 @@
 # - Configuration des droits
 # ------------------------------------------------------------------------------
 # postgres:
-#   enabled: true
-#   path:    /home/pgdata
-#   filecfg: spiderman-93.conf
-#   fileauth: 
+#   enabled:   true
+#   path:      Chemin de données de la base
+#   filecfg:   Fichier postgres.conf
+#   fileauth:  Fichier pg_hba.conf
+#   fileident: Fichier pg_ident.conf
 # ------------------------------------------------------------------------------
 # @package olixsh
 # @module debian
@@ -133,6 +134,21 @@ debian_include_config()
         chown postgres.postgres /etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_hba.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && logger_critical
     fi
+
+    # Mise en place du fichier d'identification
+    local FILEIDENT=$(yaml_getConfig "postgres.fileident")
+    if [[ -n "${FILEIDENT}" ]]; then
+        module_debian_backupFileOriginal "/etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf"
+        module_debian_installFileConfiguration \
+            "${__PATH_CONFIG}/${FILEIDENT}" "/etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf" \
+            "Mise en place de ${CCYAN}${FILEIDENT}${CVOID} vers /etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf"
+        logger_debug "chown postgres.postgres /etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf"
+        chown postgres.postgres /etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
+        [[ $? -ne 0 ]] && logger_critical
+    fi
+
+    # Déclaration des utilisateurs
+    debian_include_postgres_users
 }
 
 
@@ -157,9 +173,11 @@ debian_include_savecfg()
     logger_debug "debian_include_savecfg (postgres)"
     local FILECFG=$(yaml_getConfig "postgres.filecfg")
     local FILEAUTH=$(yaml_getConfig "postgres.fileauth")
+    local FILEIDENT=$(yaml_getConfig "postgres.fileident")
 
     [[ -n "${FILECFG}" ]] && module_debian_backupFileConfiguration "/etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/postgresql.conf" "${__PATH_CONFIG}/${FILECFG}"
     [[ -n "${FILEAUTH}" ]] && module_debian_backupFileConfiguration "/etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_hba.conf" "${__PATH_CONFIG}/${FILEAUTH}"
+    [[ -n "${FILEIDENT}" ]] && module_debian_backupFileConfiguration "/etc/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/main/pg_ident.conf" "${__PATH_CONFIG}/${FILEIDENT}"
 }
 
 
@@ -171,10 +189,12 @@ debian_include_synccfg()
     logger_debug "debian_include_synccfg (postgres)"
     local FILECFG=$(yaml_getConfig "postgres.filecfg")
     local FILEAUTH=$(yaml_getConfig "postgres.fileauth")
+    local FILEIDENT=$(yaml_getConfig "postgres.fileident")
 
     echo "postgres"
     [[ -n "${FILECFG}" ]] && echo "postgres/${FILECFG}"
     [[ -n "${FILEAUTH}" ]] && echo "postgres/${FILEAUTH}"
+    [[ -n "${FILEIDENT}" ]] && echo "postgres/${FILEIDENT}"
 }
 
 
@@ -207,4 +227,37 @@ function debian_include_postgres_path()
     su - postgres --command "/usr/lib/postgresql/${MODULE_DEBIAN_POSTGRES_VERSION}/bin/initdb -D ${POSTGRES_PATH}; exit $?"
     [[ $? -ne 0 ]] && logger_critical
     echo -e "Regenération de l'instance PostgreSQL : ${CVERT}OK ...${CVOID}"
+}
+
+
+###
+# Déclaration des utilisateurs et des privilèges
+##
+function debian_include_postgres_users()
+{
+    logger_debug "debian_include_postgres_users ()"
+    local USERNAME USERGRANT
+
+    for (( I = 1; I < 10; I++ )); do
+        USERNAME=$(yaml_getConfig "postgres.users.user_${I}.name")
+        [[ -z ${USERNAME} ]] && break
+        USERGRANT=$(yaml_getConfig "postgres.users.user_${I}.grant")
+        logger_info "Privilège de l'utilisateur '${USERNAME}'"
+
+        # Création de l'utilisateur si celui-ci n'existe pas
+        logger_debug "SELECT 1 FROM pg_roles WHERE rolname='${USERNAME}'"
+        su -l postgres -c "psql postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='${USERNAME}'\"" | grep -q 1
+        if [[ $? -ne 0 ]]; then
+            stdin_readDoublePassword "Choisir un mot de passe pour l'utilisateur ${CCYAN}${USERNAME}${CVOID}"
+            logger_debug "CREATE ROLE ${USERNAME} ENCRYPTED PASSWORD '???'"
+            su -l postgres -c "psql postgres -tAc \"CREATE ROLE ${USERNAME} ENCRYPTED PASSWORD '${OLIX_STDIN_RETURN}'\"" > ${OLIX_LOGGER_FILE_ERR} 2>&1
+            [[ $? -ne 0 ]] && logger_critical
+        fi
+
+        logger_debug "ALTER ROLE ${USERNAME} LOGIN ${USERGRANT}"
+        su -l postgres -c "psql postgres -tAc \"ALTER ROLE ${USERNAME} LOGIN ${USERGRANT}\"" > ${OLIX_LOGGER_FILE_ERR} 2>&1
+        [[ $? -ne 0 ]] && logger_critical
+
+        echo -e "Privilèges de l'utilisateur ${CCYAN}${USERNAME}${CVOID} : ${CVERT}OK ...${CVOID}"
+    done
 }
