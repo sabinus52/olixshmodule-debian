@@ -147,6 +147,8 @@ debian_include_config()
         [[ $? -ne 0 ]] && logger_critical
     fi
 
+    debian_include_restart
+
     # Déclaration des utilisateurs
     debian_include_postgres_users
 }
