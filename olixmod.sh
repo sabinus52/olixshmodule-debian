@@ -9,7 +9,8 @@
 OLIX_MODULE_NAME="debian"
 
 # Version en cours d'Ubuntu
-OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -sc)
+OLIX_MODULE_DEBIAN_VERSION=$(cat /etc/debian_version)
+OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(cat /etc/os-release |grep VERSION= |cut -f 2 -d \(|cut -f 1 -d \))
 
 # Si on doit utiliser tous les packages
 OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false

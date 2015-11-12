@@ -43,7 +43,7 @@ debian_include_main()
 {
     logger_debug "ubuntu_include_main (nfs, $1)"
 
-    if [[ "$(yaml_getConfig "php.enabled")" != true ]]; then
+    if [[ "$(yaml_getConfig "nfs.enabled")" != true ]]; then
         logger_warning "Service 'nfs' non activé"
         return 1
     fi
