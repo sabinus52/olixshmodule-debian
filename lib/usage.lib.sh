@@ -15,7 +15,7 @@ function module_debian_usage_main()
     logger_debug "module_debian_usage_main ()"
     stdout_printVersion
     echo
-    echo -e "Installation, configuration et gestion d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
+    echo -e "Installation, configuration et gestion d'un serveur DEBIAN ${CBLANC}${OLIX_MODULE_DEBIAN_VERSION} (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}<action>${CVOID}"
     echo
@@ -38,7 +38,7 @@ function module_debian_usage_install()
     logger_debug "module_debian_usage_install ()"
     stdout_printVersion
     echo
-    echo -e "Installation d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID} et ses packages"
+    echo -e "Installation d'un serveur DEBIAN ${CBLANC}${OLIX_MODULE_DEBIAN_VERSION} (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID} et ses packages"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}install${CVOID} ${CBLANC}<packages...> [OPTIONS]${CVOID}"
     echo
@@ -75,7 +75,7 @@ function module_debian_usage_config()
     logger_debug "module_debian_usage_config ()"
     stdout_printVersion
     echo
-    echo -e "Configuration des packages d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
+    echo -e "Configuration des packages d'un serveur DEBIAN ${CBLANC}${OLIX_MODULE_DEBIAN_VERSION} (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}config${CVOID} ${CBLANC}<package>${CVOID}"
     echo
@@ -105,7 +105,7 @@ function module_debian_usage_savecfg()
     logger_debug "module_debian_usage_savecfg ()"
     stdout_printVersion
     echo
-    echo -e "Sauvegarde de la configuration des services d'un serveur DEBIAN ${CBLANC}$(lsb_release -sr) (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
+    echo -e "Sauvegarde de la configuration des services d'un serveur DEBIAN ${CBLANC}${OLIX_MODULE_DEBIAN_VERSION} (${OLIX_MODULE_DEBIAN_VERSION_RELEASE})${CVOID}"
     echo
     echo -e "${CBLANC} Usage : ${CVIOLET}$(basename ${OLIX_ROOT_SCRIPT}) ${CVERT}debian ${CJAUNE}savecfg${CVOID} ${CBLANC}<packages...> [OPTIONS]${CVOID}"
     echo
