@@ -1,0 +1,137 @@
+
+###
+# Fonction principale
+##
+_olixsh_module()
+{
+    local CURRENT MODULE ACTION PREVIOUS PARAM1 PARAM2 PARAM3 PARAM4 PARAM5
+    local LST_ACTIONS="init install config update savecfg synccfg help"
+    COMPREPLY=()
+    CURRENT="${COMP_WORDS[COMP_CWORD]}"
+    PREVIOUS="${COMP_WORDS[COMP_CWORD-1]}"
+
+    if [[ "${PREVIOUS}" == "debian" ]]; then
+        COMPREPLY=( $(compgen -W "${LST_ACTIONS}" -- ${CURRENT}) )
+        return 0
+    fi
+
+    for I in ${COMP_WORDS[*]}; do
+        if [[ -z ${ACTION} ]]; then
+            [[ ${LST_ACTIONS} =~ (^|[[:space:]])"${I}"($|[[:space:]]) ]] && ACTION=$I && continue
+        else
+            [[ "$I" == "$CURRENT" ]] && continue
+            [[ -z ${PARAM1} ]] && PARAM1=${I} && continue
+            [[ -z ${PARAM2} ]] && PARAM2=${I} && continue
+            [[ -z ${PARAM3} ]] && PARAM3=${I} && continue
+            [[ -z ${PARAM4} ]] && PARAM4=${I} && continue
+            [[ -z ${PARAM5} ]] && PARAM5=${I} && continue
+        fi
+    done
+
+    case "${ACTION}" in
+        init)
+            _olixsh_module_init ${PARAM1} ${PARAM2} ${PARAM3}
+            return 0
+            ;;
+        install)
+            _olixsh_module_install_packages
+            return 0
+            ;;
+        config)
+            _olixsh_module_config_packages
+            return 0
+            ;;
+        savecfg)
+            _olixsh_module_savecfg_packages
+            return 0
+            ;;
+        synccfg)
+            _olixsh_module_synccfg_actions ${PARAM1} ${PARAM2} ${PARAM3} ${PARAM4}
+            return 0
+            ;;
+    esac
+}
+
+
+###
+# Action INIT du module DEBIAN
+##
+_olixsh_module_init()
+{
+    local CUR
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+
+    [[ -n $3 ]] && return 0
+
+    if [[ -n $1 && -z $2 ]]; then
+        COMPREPLY=( $(compgen -d -- ${CUR}) )
+    fi
+    if [[ -n $1 && -n $2 ]]; then
+        COMPREPLY=( $(compgen -W "--port" -- ${CUR}) )
+    fi
+}
+
+
+###
+# Liste des packages de l'action INSTALL du module DEBIAN
+##
+_olixsh_module_install_packages()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PACKAGES="--all network users virtualbox vmware apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools help"
+
+    COMPREPLY=( $(compgen -W "${PACKAGES}" -- ${CUR}) )
+}
+
+
+###
+# Liste des packages de l'action CONFIG du module DEBIAN
+##
+_olixsh_module_config_packages()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PACKAGES="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools help"
+
+    COMPREPLY=( $(compgen -W "${PACKAGES}" -- ${CUR}) )
+}
+
+
+###
+# Liste des packages de l'action SAVECFG du module DEBIAN
+##
+_olixsh_module_savecfg_packages()
+{
+    local CUR PACKAGES
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    PACKAGES="--all apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools help"
+
+    COMPREPLY=( $(compgen -W "${PACKAGES}" -- ${CUR}) )
+}
+
+
+###
+# Liste des actions de l'action SYNCCFG du module DEBIAN
+##
+_olixsh_module_synccfg_actions()
+{
+    local CUR ACTION
+    CUR="${COMP_WORDS[COMP_CWORD]}"
+    ACTION="--port pull push help"
+
+    [[ -z $1 ]] && COMPREPLY=( $(compgen -W "pull push help" -- ${CUR}) ) && return 0
+
+    case $1 in
+        pull)
+            [[ -n $4 ]] && return 0
+            [[ -n $2 && -z $3 ]] && COMPREPLY=( $(compgen -d -- ${CUR}) )
+            [[ -n $2 && -n $3 ]] && COMPREPLY=( $(compgen -W "--port" -- ${CUR}) )
+            ;;
+        push)
+            [[ -n $3 ]] && return 0
+            [[ -n $2 && -z $3 ]] && COMPREPLY=( $(compgen -W "--port" -- ${CUR}) )
+            ;;
+        *) return 0;;
+    esac
+}

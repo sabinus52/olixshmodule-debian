@@ -19,7 +19,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -43,35 +43,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (apache, $1)"
+    debug "debian_service_main (apache, $1)"
 
-    if [[ "$(yaml_getConfig "apache.enabled")" != true ]]; then
-        logger_warning "Service 'apache' non activé"
+    if [[ "$(Yaml.get "apache.enabled")" != true ]]; then
+        warning "Service 'apache' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/apache"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/apache"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -80,90 +80,90 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (apache)"
+    debug "debian_service_install (apache)"
 
-    logger_info "Installation des packages APACHE"
+    info "Installation des packages APACHE"
     apt-get --yes install apache2-mpm-prefork ssl-cert
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages APACHE"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages APACHE"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (apache)"
+    debug "debian_service_config (apache)"
 
     # Activation des modules Apache
-    debian_include_apache_modules
+    debian_service_apache_modules
     # Installation des fichiers de configuration
-    debian_include_apache_configs
+    debian_service_apache_configs
     # Activation du site par défaut
-    debian_include_apache_default
+    debian_service_apache_default
 }
 
 
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (apache)"
+    debug "debian_service_restart (apache)"
 
-    logger_info "Redémarrage du service APACHE"
+    info "Redémarrage du service APACHE"
     systemctl restart apache2
-    [[ $? -ne 0 ]] && logger_critical "Service APACHE NOT running"
+    [[ $? -ne 0 ]] && critical "Service APACHE NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (apache)"
-    local CONFIGS=$(yaml_getConfig "apache.configs")
-    local DEFAULT=$(yaml_getConfig "apache.default")
+    debug "debian_service_savecfg (apache)"
+    local CONFIGS=$(Yaml.get "apache.configs")
+    local DEFAULT=$(Yaml.get "apache.default")
 
-    for I in ${CONFIGS}; do
-        module_debian_backupFileConfiguration "/etc/apache2/conf-available/$I.conf" "${__PATH_CONFIG}/conf/$I.conf"
+    for I in $CONFIGS; do
+        Debian.fileconfig.save "/etc/apache2/conf-available/$I.conf" "${__PATH_CONFIG}/conf/$I.conf"
     done
-    module_debian_backupFileConfiguration "/etc/apache2/sites-available/000-default.conf" "${__PATH_CONFIG}/default/${DEFAULT}"
+    Debian.fileconfig.save "/etc/apache2/sites-available/000-default.conf" "${__PATH_CONFIG}/default/$DEFAULT"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (apache)"
-    local CONFIGS=$(yaml_getConfig "apache.configs")
-    local DEFAULT=$(yaml_getConfig "apache.default")
+    debug "debian_service_synccfg (apache)"
+    local CONFIGS=$(Yaml.get "apache.configs")
+    local DEFAULT=$(Yaml.get "apache.default")
 
     echo "apache apache/conf apache/default"
-    for I in ${CONFIGS}; do
+    for I in $CONFIGS; do
        echo "apache/conf/$I.conf"
     done
-    echo "apache/default/${DEFAULT}"
+    echo "apache/default/$DEFAULT"
 }
 
 
 ###
 # Activation des modules Apache
 ##
-function debian_include_apache_modules()
+function debian_service_apache_modules()
 {
-    logger_debug "debian_include_apache_modules ()"
-    local MODULES=$(yaml_getConfig "apache.modules")
+    debug "debian_service_apache_modules ()"
+    local MODULES=$(Yaml.get "apache.modules")
 
-    for I in ${MODULES}; do
-        logger_info "Activation du module $I"
+    for I in $MODULES; do
+        info "Activation du module $I"
         a2enmod $I > ${OLIX_LOGGER_FILE_ERR} 2>&1
-        [[ $? -ne 0 ]] && logger_critical
+        [[ $? -ne 0 ]] && critical
         echo -e "Activation du module ${CCYAN}$I${CVOID} : ${CVERT}OK ...${CVOID}"
     done
 }
@@ -172,23 +172,23 @@ function debian_include_apache_modules()
 ###
 # Installation des fichiers de configuration
 ##
-function debian_include_apache_configs()
+function debian_service_apache_configs()
 {
-    logger_debug "debian_include_apache_configs ()"
-    local CONFIGS=$(yaml_getConfig "apache.configs")
+    debug "debian_service_apache_configs ()"
+    local CONFIGS=$(Yaml.get "apache.configs")
 
-    logger_info "Suppression de la conf actuelle"
+    info "Suppression de la conf actuelle"
     rm -rf /etc/apache2/conf-enabled/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
     rm -rf /etc/apache2/conf-available/olix* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
     for I in $(ls ${__PATH_CONFIG}/conf/olix*); do
-        module_debian_installFileConfiguration "$I" "/etc/apache2/conf-available/"
+        Debian.fileconfig.install "$I" "/etc/apache2/conf-available/"
     done
-    for I in ${CONFIGS}; do
-        logger_info "Activation de la conf $I"
+    for I in $CONFIGS; do
+        info "Activation de la conf $I"
         a2enconf $I > ${OLIX_LOGGER_FILE_ERR} 2>&1
-        [[ $? -ne 0 ]] && logger_critical
+        [[ $? -ne 0 ]] && critical
         echo -e "Activation de la conf ${CCYAN}$I${CVOID} : ${CVERT}OK ...${CVOID}"
     done
 }
@@ -197,26 +197,26 @@ function debian_include_apache_configs()
 ###
 # Activation du site par défaut
 ##
-function debian_include_apache_default()
+function debian_service_apache_default()
 {
-    logger_debug "debian_include_apache_default ()"
-    local DEFAULT=$(yaml_getConfig "apache.default")
+    debug "debian_service_apache_default ()"
+    local DEFAULT=$(Yaml.get "apache.default")
 
-    if [[ -z ${DEFAULT} ]]; then
-        logger_warning "Pas de site par défaut défini"
+    if [[ -z $DEFAULT ]]; then
+        warning "Pas de site par défaut défini"
         return 1
     fi
 
-    module_debian_backupFileOriginal "/etc/apache2/sites-available/000-default.conf"
+    Debian.fileconfig.keep "/etc/apache2/sites-available/000-default.conf"
 
-    logger_info "Effacement de /etc/apache2/sites-enabled/000-default.conf"
+    info "Effacement de /etc/apache2/sites-enabled/000-default.conf"
     rm -rf /etc/apache2/sites-enabled/000-default.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
 
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/default/${DEFAULT}" "/etc/apache2/sites-available/000-default.conf"
+    Debian.fileconfig.install "${__PATH_CONFIG}/default/$DEFAULT" "/etc/apache2/sites-available/000-default.conf"
 
-    logger_info "Activation du site 000-default.conf"
+    info "Activation du site 000-default.conf"
     a2ensite 000-default.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
     echo -e "Activation du site ${CCYAN}default.conf${CVOID} : ${CVERT}OK ...${CVOID}"
 }

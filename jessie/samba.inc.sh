@@ -21,7 +21,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -45,35 +45,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (samba, $1)"
+    debug "debian_service_main (samba, $1)"
 
-    if [[ "$(yaml_getConfig "samba.enabled")" != true ]]; then
-        logger_warning "Service 'samba' non activé"
+    if [[ "$(Yaml.get "samba.enabled")" != true ]]; then
+        warning "Service 'samba' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/samba"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/samba"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -82,85 +82,85 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (samba)"
+    debug "debian_service_install (samba)"
 
-    logger_info "Installation des packages SAMBA"
+    info "Installation des packages SAMBA"
     apt-get --yes install samba smbclient cifs-utils
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages SAMBA"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages SAMBA"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (samba)"
-    local FILECFG=$(yaml_getConfig "samba.filecfg")
+    debug "debian_service_config (samba)"
+    local FILECFG=$(Yaml.get "samba.filecfg")
 
-    module_debian_backupFileOriginal "/etc/samba/smb.conf"
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/${FILECFG}" "/etc/samba/smb.conf" \
+    Debian.fileconfig.keep "/etc/samba/smb.conf"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/samba/smb.conf" \
         "Mise en place de ${CCYAN}${FILECFG}${CVOID} vers /etc/samba/smb.conf"
 
     # Déclaration des utilisateurs
-    debian_include_samba_users
+    debian_service_samba_users
 }
 
 
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (samba)"
+    debug "debian_service_restart (samba)"
 
-    logger_info "Redémarrage du service SAMBA"
+    info "Redémarrage du service SAMBA"
     systemctl restart smbd
-    [[ $? -ne 0 ]] && logger_critical "Service SAMBA NOT running"
+    [[ $? -ne 0 ]] && critical "Service SAMBA NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (samba)"
-    local FILECFG=$(yaml_getConfig "samba.filecfg")
+    debug "debian_service_savecfg (samba)"
+    local FILECFG=$(Yaml.get "samba.filecfg")
 
-    module_debian_backupFileConfiguration "/etc/samba/smb.conf" "${__PATH_CONFIG}/${FILECFG}"
+    Debian.fileconfig.save "/etc/samba/smb.conf" "${__PATH_CONFIG}/$FILECFG"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (samba)"
-    local FILECFG=$(yaml_getConfig "samba.filecfg")
+    debug "debian_service_synccfg (samba)"
+    local FILECFG=$(Yaml.get "samba.filecfg")
 
     echo "samba"
-    echo "samba/${FILECFG}"
+    echo "samba/$FILECFG"
 }
 
 
 ###
 # Déclaration des utilisateurs
 ##
-function debian_include_samba_users()
+function debian_service_samba_users()
 {
-    logger_debug "debian_include_samba_users ()"
+    debug "debian_service_samba_users ()"
     local USERNAME
 
     for (( I = 1; I < 10; I++ )); do
-        local USERNAME=$(yaml_getConfig "samba.users.user_${I}.name")
-        [[ -z ${USERNAME} ]] && break
+        local USERNAME=$(Yaml.get "samba.users.user_${I}.name")
+        [[ -z $USERNAME ]] && break
 
-        logger_info "Activation de l'utilisateur '${USERNAME}'"
-        smbpasswd -a ${USERNAME}
+        info "Activation de l'utilisateur '${USERNAME}'"
+        smbpasswd -a $USERNAME
 
         echo -e "Activation de l'utilisateur ${CCYAN}${USERNAME}${CVOID} : ${CVERT}OK ...${CVOID}"
     done

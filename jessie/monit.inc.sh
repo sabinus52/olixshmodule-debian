@@ -15,7 +15,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -39,35 +39,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (monit, $1)"
+    debug "debian_service_main (monit, $1)"
 
-    if [[ "$(yaml_getConfig "monit.enabled")" != true ]]; then
-        logger_warning "Service 'monit' non activé"
+    if [[ "$(Yaml.get "monit.enabled")" != true ]]; then
+        warning "Service 'monit' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/monit"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/monit"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -76,31 +76,31 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (monit)"
+    debug "debian_service_install (monit)"
 
-    logger_info "Installation des packages MONIT"
+    info "Installation des packages MONIT"
     apt-get --yes install monit
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages MONIT"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages MONIT"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (monit)"
-    local CONFD=$(yaml_getConfig "monit.confd")
+    debug "debian_service_config (monit)"
+    local CONFD=$(Yaml.get "monit.confd")
 
-    logger_info "Effacement des fichiers déjà présents dans /etc/monit/conf.d"
+    info "Effacement des fichiers déjà présents dans /etc/monit/conf.d"
     rm -f /etc/monit/conf.d/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
-    logger_info "Mise en place des fichiers de conf dans /etc/monit/conf.d"
-    for I in ${CONFD}; do
-        module_debian_installFileConfiguration "${__PATH_CONFIG}/${I}" "/etc/monit/conf.d/" \
-            "Mise en place de ${CCYAN}${I}${CVOID} vers /etc/monit/conf.d"
+    [[ $? -ne 0 ]] && critical
+    info "Mise en place des fichiers de conf dans /etc/monit/conf.d"
+    for I in $CONFD; do
+        Debian.fileconfig.install "${__PATH_CONFIG}/$I" "/etc/monit/conf.d/" \
+            "Mise en place de ${CCYAN}$I${CVOID} vers /etc/monit/conf.d"
     done
 }
 
@@ -108,26 +108,26 @@ debian_include_config()
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (monit)"
+    debug "debian_service_restart (monit)"
 
-    logger_info "Redémarrage du service MONIT"
+    info "Redémarrage du service MONIT"
     systemctl restart monit
-    [[ $? -ne 0 ]] && logger_critical "Service MONIT NOT running"
+    [[ $? -ne 0 ]] && critical "Service MONIT NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (monit)"
-    local CONFD=$(yaml_getConfig "monit.confd")
+    debug "debian_service_savecfg (monit)"
+    local CONFD=$(Yaml.get "monit.confd")
 
-    for I in ${CONFD}; do
-        module_debian_backupFileConfiguration "/etc/monit/conf.d/${I}" "${__PATH_CONFIG}/${I}"
+    for I in $CONFD; do
+        Debian.fileconfig.save "/etc/monit/conf.d/$I" "${__PATH_CONFIG}/$I"
     done
 }
 
@@ -135,13 +135,13 @@ debian_include_savecfg()
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (monit)"
-    local CONFD=$(yaml_getConfig "monit.confd")
+    debug "debian_service_synccfg (monit)"
+    local CONFD=$(Yaml.get "monit.confd")
 
     echo "monit"
-    for I in ${CONFD}; do
+    for I in $CONFD; do
        echo "monit/$I.conf"
     done
 }

@@ -92,7 +92,7 @@ debian_service_install()
     debug "debian_service_install (mysql)"
 
     info "Installation des packages MYSQL"
-    apt-get --yes install mysql-server
+    apt-get --yes install mariadb-server
     [[ $? -ne 0 ]] && critical "Impossible d'installer les packages MYSQL"
     
     local MYSQL_PATH=$(Yaml.get "mysql.path")
@@ -216,7 +216,7 @@ function debian_service_mysql_script()
     local SCRIPT=${__PATH_CONFIG}/$SCRIPTNAME
 
     info "Execution du script ${SCRIPTNAME}"
-    [[ ! -f $SCRIPT ]] && critical "Le fichier ${SCRIPT} n'existe pas"
+    [[ ! -f $SCRIPT} ]] && critical "Le fichier ${SCRIPT} n'existe pas"
     cat $SCRIPT | mysql --user=root --password=$MYSQL_PASSWORD > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && critical
     echo -e "Execution du script SQL : ${CVERT}OK ...${CVOID}"
@@ -236,7 +236,7 @@ function debian_service_mysql_users()
         USERNAME=$(Yaml.get "mysql.users.user_${I}.name")
         [[ -z $USERNAME ]] && break
         USERGRANT=$(Yaml.get "mysql.users.user_${I}.grant")
-        USERGRANT=$(echo $USERGRAN | sed "s/\\\\//g")
+        USERGRANT=$(echo $USERGRANT | sed "s/\\\\//g")
         info "Privilège de l'utilisateur '${USERNAME}'"
 
         # Création de l'utilisateur si celui-ci n'existe pas

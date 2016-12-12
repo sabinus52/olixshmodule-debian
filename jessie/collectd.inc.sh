@@ -8,6 +8,7 @@
 # collectd:
 #    enabled:
 #    plugins: Liste des plugins à activer
+#    apache:  Conf apache pour l'alias des scripts de génération des graphs
 # ------------------------------------------------------------------------------
 # @package olixsh
 # @module debian
@@ -16,7 +17,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -40,35 +41,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (collectd, $1)"
+    debug "debian_service_main (collectd, $1)"
 
-    if [[ "$(yaml_getConfig "collectd.enabled")" != true ]]; then
-        logger_warning "Service 'collectd' non activé"
+    if [[ "$(Yaml.get "collectd.enabled")" != true ]]; then
+        warning "Service 'collectd' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/collectd"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/collectd"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -77,92 +78,96 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (collectd)"
+    debug "debian_service_install (collectd)"
 
-    logger_info "Installation des packages COLLECTD"
+    info "Installation des packages COLLECTD"
     apt-get --yes install collectd librrds-perl libconfig-general-perl libhtml-parser-perl libregexp-common-perl
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages COLLECTD"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages COLLECTD"
 
     # Activation des Plugins obligatoire
-    debian_include_collectd_plugins_required
+    debian_service_collectd_plugins_required
 
     # Reset des données
-    debian_include_collectd_reset
+    debian_service_collectd_reset
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (collectd)"
+    debug "debian_service_config (collectd)"
 
-    debian_include_collectd_plugins
+    debian_service_collectd_plugins
+    debian_service_collectd_apache
 }
 
 
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (collectd)"
+    debug "debian_service_restart (collectd)"
 
-    logger_info "Redémarrage du service COLLECTD"
+    info "Redémarrage du service COLLECTD"
     systemctl restart collectd
-    [[ $? -ne 0 ]] && logger_critical "Service COLLECTD NOT running"
+    [[ $? -ne 0 ]] && critical "Service COLLECTD NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (collectd)"
-    local PLUGINS=$(yaml_getConfig "collectd.plugins")
+    debug "debian_service_savecfg (collectd)"
+    local PLUGINS=$(Yaml.get "collectd.plugins")
+    local APACHE=$(Yaml.get "collectd.apache")
 
-    for I in ${PLUGINS}; do
-        module_debian_backupFileConfiguration "/etc/collectd/collectd.conf.d/$I.conf" "${__PATH_CONFIG}/$I.conf"
+    for I in $PLUGINS; do
+        Debian.fileconfig.save "/etc/collectd/collectd.conf.d/$I.conf" "${__PATH_CONFIG}/$I.conf"
     done
-   
+    [[ -n "$APACHE" ]] && Debian.fileconfig.save "/etc/apache2/conf-available/collectd.conf" "${__PATH_CONFIG}/${APACHE}.conf"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (collectd)"
-    local PLUGINS=$(yaml_getConfig "collectd.plugins")
+    debug "debian_service_synccfg (collectd)"
+    local PLUGINS=$(Yaml.get "collectd.plugins")
+    local APACHE=$(Yaml.get "collectd.apache")
 
     echo "collectd"
-    for I in ${PLUGINS}; do
+    for I in $PLUGINS; do
        echo "collectd/$I.conf"
     done
+    [[ -n "$APACHE" ]] && echo "collectd/$APACHE.conf"
 }
 
 
 ###
 # Activation des Plugins obligatoire
 ##
-function debian_include_collectd_plugins_required()
+function debian_service_collectd_plugins_required()
 {
-    logger_debug "debian_include_collectd_plugins_required ()"
+    debug "debian_service_collectd_plugins_required ()"
     local PLUGINS="syslog rrdtool df cpu load memory processes swap users"
 
-    module_debian_backupFileOriginal "/etc/collectd/collectd.conf"
-    logger_info "Commentaire sur les LoadPlugin"
+    Debian.fileconfig.keep "/etc/collectd/collectd.conf"
+    info "Commentaire sur les LoadPlugin"
     sed -i "s/^LoadPlugin/\#LoadPlugin/g" /etc/collectd/collectd.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
-    for I in ${PLUGINS}; do
-        logger_info "Activation du plugin '${I}'"
+    [[ $? -ne 0 ]] && critical
+    for I in $PLUGINS; do
+        info "Activation du plugin '${I}'"
         sed -i "s/^\#LoadPlugin $I/LoadPlugin $I/g" /etc/collectd/collectd.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
-        [[ $? -ne 0 ]] && logger_critical
+        [[ $? -ne 0 ]] && critical
     done
 }
 
@@ -170,34 +175,57 @@ function debian_include_collectd_plugins_required()
 ###
 # Mise en place de la conf pour chaque plugin
 ##
-function debian_include_collectd_plugins()
+function debian_service_collectd_plugins()
 {
-    logger_debug "debian_include_collectd_plugins"
-    local PLUGINS=$(yaml_getConfig "collectd.plugins")
+    debug "debian_service_collectd_plugins"
+    local PLUGINS=$(Yaml.get "collectd.plugins")
 
-    logger_info "Effacement des anciennes configurations"
+    info "Effacement des anciennes configurations"
     rm -f /etc/collectd/collectd.conf.d/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
-    for I in ${PLUGINS}; do
-        module_debian_installFileConfiguration "${__PATH_CONFIG}/${I}.conf" "/etc/collectd/collectd.conf.d" \
-            "Activation du plugin ${CCYAN}${I}${CVOID}"
+    [[ $? -ne 0 ]] && critical
+    for I in $PLUGINS; do
+        Debian.fileconfig.install "${__PATH_CONFIG}/$I.conf" "/etc/collectd/collectd.conf.d" \
+            "Activation du plugin ${CCYAN}$I${CVOID}"
     done
+}
+
+
+###
+# Installation du fichier de configuration Apache
+##
+function debian_service_collectd_apache()
+{
+    debug "debian_service_collectd_apache ()"
+    
+    local APACHE=$(Yaml.get "collectd.apache")
+    [[ -z "$APACHE" ]] && return
+
+    info "Suppression de la conf Apache actuelle"
+    rm -rf /etc/apache2/conf-enabled/collectd.conf > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    [[ $? -ne 0 ]] && critical
+    Debian.fileconfig.install "${__PATH_CONFIG}/$APACHE.conf" "/etc/apache2/conf-available/collectd.conf"
+    info "Activation de la conf Apache collectd"
+    a2enconf collectd > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    [[ $? -ne 0 ]] && critical
+    systemctl restart apache2
+    [[ $? -ne 0 ]] && critical
+    echo -e "Activation de la conf ${CCYAN}Apache collectd${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
 
 ###
 # Reset des données
 ##
-function debian_include_collectd_reset()
+function debian_service_collectd_reset()
 {
-    logger_debug "debian_include_collectd_reset"
+    debug "debian_service_collectd_reset"
 
     echo -en "${Cjaune}ATTENTION !!! Ecrasement des fichiers de données RTM.${CVOID} : "
-    stdin_readYesOrNo "Confirmer" false
-    if [ ${OLIX_STDIN_RETURN} == true ]; then
-        logger_info "Effacement des fichiers de données RRD"
+    Read.confirm "Confirmer" false
+    if [ $OLIX_FUNCTION_RETURN} == true ]; then
+        info "Effacement des fichiers de données RRD"
         rm -rf /var/lib/collectd/rrd/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-        [[ $? -ne 0 ]] && logger_critical
+        [[ $? -ne 0 ]] && critical
         echo -e "Effacement des fichiers de données RRD : ${CVERT}OK ...${CVOID}"
     fi
 }

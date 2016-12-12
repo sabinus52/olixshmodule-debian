@@ -17,7 +17,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -41,25 +41,25 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (tools, $1)"
+    debug "debian_service_main (tools, $1)"
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/tools"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/tools"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
+            debian_service_install
+            debian_service_config
             ;;
         config)
-            debian_include_config
+            debian_service_config
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -68,15 +68,15 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (tools)"
-    local TOOLS_APT=$(yaml_getConfig "tools.apt")
+    debug "debian_service_install (tools)"
+    local TOOLS_APT=$(Yaml.get "tools.apt")
 
-    if [[ -n ${TOOLS_APT} ]]; then
-        logger_info "Installation des packages additionnels"
-        apt-get --yes install vim ${TOOLS_APT}
-        [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages additionnels"
+    if [[ -n $TOOLS_APT ]]; then
+        info "Installation des packages additionnels"
+        apt-get --yes install vim $TOOLS_APT
+        [[ $? -ne 0 ]] && critical "Impossible d'installer les packages additionnels"
     fi
 }
 
@@ -84,66 +84,66 @@ debian_include_install()
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (tools)"
-    local CRONTAB=$(yaml_getConfig "tools.crontab")
-    local LOGROTATE=$(yaml_getConfig "tools.logrotate")
+    debug "debian_service_config (tools)"
+    local CRONTAB=$(Yaml.get "tools.crontab")
+    local LOGROTATE=$(Yaml.get "tools.logrotate")
 
     # Installation des fichiers CRONTAB
-    if [ -n "${CRONTAB}" ]; then
-        module_debian_installFileConfiguration "${__PATH_CONFIG}/${CRONTAB}" "/etc/cron.d/" \
+    if [ -n "$CRONTAB" ]; then
+        Debian.fileconfig.install "${__PATH_CONFIG}/$CRONTAB" "/etc/cron.d/" \
             "Mise en place de ${CCYAN}${CRONTAB}${CVOID} vers /etc/cron.d"
     fi
 
     # Installation des fichiers LOGROTATE
-    if [ -n "${LOGROTATE}" ]; then
-        module_debian_installFileConfiguration "${__PATH_CONFIG}/${LOGROTATE}" "/etc/logrotate.d/" \
+    if [ -n "$LOGROTATE" ]; then
+        Debian.fileconfig.install "${__PATH_CONFIG}/$LOGROTATE" "/etc/logrotate.d/" \
             "Mise en place de ${CCYAN}${LOGROTATE}${CVOID} vers /etc/logrotate.d"
     fi
 
-    debian_include_tools_tuning
+    debian_service_tools_tuning
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (tools)"
-    local CRONTAB=$(yaml_getConfig "tools.crontab")
-    local LOGROTATE=$(yaml_getConfig "tools.logrotate")
+    debug "debian_service_savecfg (tools)"
+    local CRONTAB=$(Yaml.get "tools.crontab")
+    local LOGROTATE=$(Yaml.get "tools.logrotate")
 
-    [[ -n "${CRONTAB}" ]] && module_debian_backupFileConfiguration "/etc/cron.d/${CRONTAB}" "${__PATH_CONFIG}/${CRONTAB}"
-    [[ -n "${LOGROTATE}" ]] && module_debian_backupFileConfiguration "/etc/logrotate.d/${LOGROTATE}" "${__PATH_CONFIG}/${LOGROTATE}"
+    [[ -n "$CRONTAB" ]] && Debian.fileconfig.save "/etc/cron.d/$CRONTAB" "${__PATH_CONFIG}/$CRONTAB"
+    [[ -n "$LOGROTATE" ]] && Debian.fileconfig.save "/etc/logrotate.d/$LOGROTATE" "${__PATH_CONFIG}/$LOGROTATE"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (tools)"
-    local CRONTAB=$(yaml_getConfig "tools.crontab")
-    local LOGROTATE=$(yaml_getConfig "tools.logrotate")
+    debug "debian_service_synccfg (tools)"
+    local CRONTAB=$(Yaml.get "tools.crontab")
+    local LOGROTATE=$(Yaml.get "tools.logrotate")
 
     echo "tools"
-    [[ -n "${CRONTAB}" ]] && echo "postgres/${CRONTAB}"
-    [[ -n "${LOGROTATE}" ]] && echo "postgres/${LOGROTATE}"
+    [[ -n "$CRONTAB" ]] && echo "postgres/$CRONTAB"
+    [[ -n "$LOGROTATE" ]] && echo "postgres/$LOGROTATE"
 }
 
 
 ###
 # Un peu de tuning
 ##
-function debian_include_tools_tuning()
+function debian_service_tools_tuning()
 {
-    logger_debug "debian_include_tools_tuning ()"
+    debug "debian_service_tools_tuning ()"
 
     # Mode color dans vi
-    logger_info "Activation de la coloration syntaxique dans vi"
+    info "Activation de la coloration syntaxique dans vi"
     sed -i "s/\"syntax on/syntax on/g" /etc/vim/vimrc
-    [[ $? -ne 0 ]] && logger_critical "Erreur de remplacement 'syntax on'"
+    [[ $? -ne 0 ]] && critical "Erreur de remplacement 'syntax on'"
 }
