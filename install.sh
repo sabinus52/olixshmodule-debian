@@ -22,12 +22,6 @@ fi
 
 
 ###
-# Parsing des paramètres
-##
-olixmodule_debian_params_parse "install" $@
-
-
-###
 # Charge le fichier de configuration contenant les paramètes necessaires à l'installation
 ###
 Debian.config.load

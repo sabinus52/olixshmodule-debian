@@ -31,7 +31,6 @@ OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG="apache php mysql postgres nfs samba ftp pos
 ##
 olixmodule_debian_require_libraries()
 {
-    load "modules/debian/conf/params.sh"
     load "modules/debian/lib/*"
     load "utils/yaml.sh"
 }

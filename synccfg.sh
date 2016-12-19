@@ -30,8 +30,6 @@ fi
 ###
 # Test des paramètres saisies
 ##
-olixmodule_debian_params_parse "synccfg" $@
-
 if [[ -z $OLIX_MODULE_DEBIAN_SYNC_SERVER ]]; then
     critical "Le paramètre de l'adresse du serveur est manquant"
 fi

@@ -22,10 +22,8 @@ fi
 
 
 ###
-# Parsing des paramètres
+# Vérification des paramètres
 ##
-olixmodule_debian_params_parse "config" $@
-
 if [[ $OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE == true ]]; then
     Module.execute.usage "config"
     die 1
