@@ -24,7 +24,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -48,35 +48,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (ftp, $1)"
+    debug "debian_service_main (ftp, $1)"
 
-    if [[ "$(yaml_getConfig "ftp.enabled")" != true ]]; then
-        logger_warning "Service 'ftp' non activé"
+    if [[ "$(Yaml.get "ftp.enabled")" != true ]]; then
+        warning "Service 'ftp' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/ftp"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/ftp"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -85,26 +85,26 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (ftp)"
+    debug "debian_service_install (ftp)"
 
-    logger_info "Installation des packages FTP"
+    info "Installation des packages FTP"
     apt-get --yes install pure-ftpd
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages FTP"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages FTP"
 
-    logger_info "Modification du VirtualChRoot dans /etc/default/pure-ftpd-common"
+    info "Modification du VirtualChRoot dans /etc/default/pure-ftpd-common"
     sed -i "s/^VIRTUALCHROOT=.*$/VIRTUALCHROOT=true/g" /etc/default/pure-ftpd-common > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
 
     # Activation de PureDB
-    logger_info "Suppression de /etc/pure-ftpd/auth/75puredb"
+    info "Suppression de /etc/pure-ftpd/auth/75puredb"
     rm -f /etc/pure-ftpd/auth/75puredb > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
-    logger_info "Activation de la base puredb pour les utilisateurs virtuels"
+    [[ $? -ne 0 ]] && critical
+    info "Activation de la base puredb pour les utilisateurs virtuels"
     cd /etc/pure-ftpd/auth
     ln -sf ../conf/PureDB 75puredb > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && logger_critical
+    [[ $? -ne 0 ]] && critical
     cd ${OLIX_ROOT}
 }
 
@@ -112,41 +112,41 @@ debian_include_install()
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (ftp)"
+    debug "debian_service_config (ftp)"
 
     # Mise en place des paramètres de configuration
-    debian_include_ftp_configs
+    debian_service_ftp_configs
 
     # Création des utilisateurs
-    debian_include_ftp_users
+    debian_service_ftp_users
 }
 
 
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (ftp)"
+    debug "debian_service_restart (ftp)"
 
-    logger_info "Redémarrage du service FTP"
+    info "Redémarrage du service FTP"
     systemctl restart pure-ftpd
-    [[ $? -ne 0 ]] && logger_critical "Service FTP NOT running"
+    [[ $? -ne 0 ]] && critical "Service FTP NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (ftp)"
-    local LIST_CONFIGS=$(yaml_getConfig "ftp.configs")
+    debug "debian_service_savecfg (ftp)"
+    local LIST_CONFIGS=$(Yaml.get "ftp.configs")
 
-    for I in ${LIST_CONFIGS}; do
-        module_debian_backupFileConfiguration "/etc/pure-ftpd/conf/${I}" "${__PATH_CONFIG}/${I}"
+    for I in $LIST_CONFIGS; do
+        Debian.fileconfig.save "/etc/pure-ftpd/conf/$I" "${__PATH_CONFIG}/$I"
     done
 }
 
@@ -154,13 +154,13 @@ debian_include_savecfg()
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (ftp)"
-    local LIST_CONFIGS=$(yaml_getConfig "ftp.configs")
+    debug "debian_service_synccfg (ftp)"
+    local LIST_CONFIGS=$(Yaml.get "ftp.configs")
 
     echo "ftp"
-    for I in ${LIST_CONFIGS}; do
+    for I in $LIST_CONFIGS; do
        echo "ftp/$I.conf"
     done
 }
@@ -169,16 +169,16 @@ debian_include_synccfg()
 ###
 # Mise en place des paramètres de configuration
 ##
-function debian_include_ftp_configs()
+function debian_service_ftp_configs()
 {
-    logger_debug "debian_include_ftp_configs"
+    debug "debian_service_ftp_configs"
     local VALUE
-    local LIST_CONFIGS=$(yaml_getConfig "ftp.configs")
+    local LIST_CONFIGS=$(Yaml.get "ftp.configs")
 
-    for I in ${LIST_CONFIGS}; do
-        [[ -r ${__PATH_CONFIG}/${I} ]] && VALUE=$(cat ${__PATH_CONFIG}/${I})
-        module_debian_installFileConfiguration "${__PATH_CONFIG}/${I}" "/etc/pure-ftpd/conf" \
-            "Mise en place de ${CCYAN}${I}${CVOID} = ${CCYAN}${VALUE}${CVOID} vers /etc/pure-ftpd/conf"
+    for I in $LIST_CONFIGS; do
+        [[ -r ${__PATH_CONFIG}/$I ]] && VALUE=$(cat ${__PATH_CONFIG}/$I)
+        Debian.fileconfig.install "${__PATH_CONFIG}/$I" "/etc/pure-ftpd/conf" \
+            "Mise en place de ${CCYAN}$I${CVOID} = ${CCYAN}$VALUE${CVOID} vers /etc/pure-ftpd/conf"
     done
 }
 
@@ -186,29 +186,29 @@ function debian_include_ftp_configs()
 ###
 # Création des utilisateurs
 ##
-function debian_include_ftp_users()
+function debian_service_ftp_users()
 {
-    logger_debug "debian_include_ftp_users ()"
+    debug "debian_service_ftp_users ()"
     local USERNAME USERPARAM
 
     for (( I = 1; I < 10; I++ )); do
-        USERNAME=$(yaml_getConfig "ftp.users.user_${I}.name")
-        [[ -z ${USERNAME} ]] && break
-        USERPARAM=$(yaml_getConfig "ftp.users.user_${I}.param")
-        logger_info "Création de l'utilisateur '${USERNAME}'"
+        USERNAME=$(Yaml.get "ftp.users.user_${I}.name")
+        [[ -z $USERNAME ]] && break
+        USERPARAM=$(Yaml.get "ftp.users.user_$I.param")
+        info "Création de l'utilisateur '${USERNAME}'"
 
         # Création de l'utilisateur si celui-ci n'existe pas
-        logger_debug "pure-pw show ${USERNAME}"
-        if pure-pw show ${USERNAME} > /dev/null 2>&1; then
-            logger_debug "pure-pw usermod ${USERPARAM}"
-            pure-pw usermod ${USERNAME} ${USERPARAM} -m 2> ${OLIX_LOGGER_FILE_ERR}
-            [[ $? -ne 0 ]] && logger_critical
-            echo -e "Création de l'utilisateur ${CCYAN}${USERNAME}${CVOID} : ${CBLEU}Déjà créé ...${CVOID}"
+        debug "pure-pw show ${USERNAME}"
+        if pure-pw show $USERNAME > /dev/null 2>&1; then
+            debug "pure-pw usermod ${USERPARAM}"
+            pure-pw usermod $USERNAME $USERPARAM -m 2> ${OLIX_LOGGER_FILE_ERR}
+            [[ $? -ne 0 ]] && critical
+            echo -e "Création de l'utilisateur ${CCYAN}$USERNAME${CVOID} : ${CBLEU}Déjà créé ...${CVOID}"
         else
-            logger_debug "pure-pw useradd ${USERNAME} ${USERPARAM}"
+            debug "pure-pw useradd $USERNAME ${USERPARAM}"
             echo -e "Initialisation du mot de passe de ${CCYAN}${USERNAME}${CVOID}"
-            pure-pw useradd ${USERNAME} ${USERPARAM} -m 2> ${OLIX_LOGGER_FILE_ERR}
-            [[ $? -ne 0 ]] && logger_critical
+            pure-pw useradd $USERNAME $USERPARAM -m 2> ${OLIX_LOGGER_FILE_ERR}
+            [[ $? -ne 0 ]] && critical
             echo -e "Création de l'utilisateur ${CCYAN}${USERNAME}${CVOID} : ${CVERT}OK ...${CVOID}"
         fi
     done

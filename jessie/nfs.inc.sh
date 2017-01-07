@@ -15,7 +15,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -39,35 +39,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "ubuntu_include_main (nfs, $1)"
+    debug "ubuntu_include_main (nfs, $1)"
 
-    if [[ "$(yaml_getConfig "nfs.enabled")" != true ]]; then
-        logger_warning "Service 'nfs' non activé"
+    if [[ "$(Yaml.get "nfs.enabled")" != true ]]; then
+        warning "Service 'nfs' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/nfs"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/nfs"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -76,63 +76,63 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "ubuntu_include_install (nfs)"
+    debug "ubuntu_include_install (nfs)"
 
-    logger_info "Installation des packages NFS"
+    info "Installation des packages NFS"
     apt-get --yes install nfs-common nfs-kernel-server
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages NFS"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages NFS"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "ubuntu_include_config (nfs)"
-    local FILECFG=$(yaml_getConfig "nfs.filecfg")
+    debug "ubuntu_include_config (nfs)"
+    local FILECFG=$(Yaml.get "nfs.filecfg")
 
-    module_debian_backupFileOriginal "/etc/exports"
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/${FILECFG}" "/etc/exports" \
-        "Mise en place de ${CCYAN}${FILECFG}${CVOID} vers /etc/exports"
+    Debian.fileconfig.keep "/etc/exports"
+    Debian.fileconfig.install "${__PATH_CONFIG}/${FILECFG}" "/etc/exports" \
+        "Mise en place de ${CCYAN}$FILECFG${CVOID} vers /etc/exports"
 }
 
 
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "ubuntu_include_restart (nfs)"
+    debug "ubuntu_include_restart (nfs)"
 
-    logger_info "Redémarrage du service NFS"
+    info "Redémarrage du service NFS"
     systemctl restart nfs-kernel-server
-    [[ $? -ne 0 ]] && logger_critical "Service NFS NOT running"
+    [[ $? -ne 0 ]] && critical "Service NFS NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "ubuntu_include_savecfg (nfs)"
-    local FILECFG=$(yaml_getConfig "nfs.filecfg")
+    debug "ubuntu_include_savecfg (nfs)"
+    local FILECFG=$(Yaml.get "nfs.filecfg")
 
-    module_debian_backupFileConfiguration "/etc/exports" "${__PATH_CONFIG}/${FILECFG}"
+    Debian.fileconfig.save "/etc/exports" "${__PATH_CONFIG}/$FILECFG"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "ubuntu_include_synccfg (nfs)"
-    local FILECFG=$(yaml_getConfig "nfs.filecfg")
+    debug "ubuntu_include_synccfg (nfs)"
+    local FILECFG=$(Yaml.get "nfs.filecfg")
 
     echo "nfs"
-    echo "nfs/${FILECFG}"
+    echo "nfs/$FILECFG"
 }

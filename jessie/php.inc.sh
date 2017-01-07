@@ -16,7 +16,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -40,35 +40,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (php, $1)"
+    debug "debian_service_main (php, $1)"
 
-    if [[ "$(yaml_getConfig "php.enabled")" != true ]]; then
-        logger_warning "Service 'php' non activé"
+    if [[ "$(Yaml.get "php.enabled")" != true ]]; then
+        warning "Service 'php' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/php"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/php"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -77,27 +77,27 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (php)"
-    local MODULES=$(yaml_getConfig "php.modules")
+    debug "debian_service_install (php)"
+    local MODULES=$(Yaml.get "php.modules")
 
-    logger_info "Installation des packages PHP"
-    apt-get --yes install libapache2-mod-php5 php5 ${MODULES}
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages PHP"
+    info "Installation des packages PHP"
+    apt-get --yes install libapache2-mod-php5 php5 $MODULES
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages PHP"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (php)"
-    local FILECFG=$(yaml_getConfig "php.filecfg")
+    debug "debian_service_config (php)"
+    local FILECFG=$(Yaml.get "php.filecfg")
 
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/${FILECFG}" "/etc/php5/apache2/conf.d/"
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/${FILECFG}" "/etc/php5/cli/conf.d/"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/php5/apache2/conf.d/"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/php5/cli/conf.d/"
     echo -e "Activation de la conf ${CCYAN}${FILECFG}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
@@ -105,25 +105,25 @@ debian_include_config()
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (php)"
+    debug "debian_service_restart (php)"
 
-    logger_info "Redémarrage du service APACHE"
+    info "Redémarrage du service APACHE"
     systemctl restart apache2
-    [[ $? -ne 0 ]] && logger_critical "Service APACHE NOT running"
+    [[ $? -ne 0 ]] && critical "Service APACHE NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (php)"
-    local FILECFG=$(yaml_getConfig "php.filecfg")
+    debug "debian_service_savecfg (php)"
+    local FILECFG=$(Yaml.get "php.filecfg")
 
-    module_debian_backupFileConfiguration "/etc/php5/apache2/conf.d/${FILECFG}" "${__PATH_CONFIG}/${FILECFG}"
+    Debian.fileconfig.save "/etc/php5/apache2/conf.d/$FILECFG" "${__PATH_CONFIG}/$FILECFG"
 }
 
 
@@ -131,11 +131,11 @@ debian_include_savecfg()
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (php)"
-    local FILECFG=$(yaml_getConfig "php.filecfg")
+    debug "debian_service_synccfg (php)"
+    local FILECFG=$(Yaml.get "php.filecfg")
 
     echo "php"
-    echo "php/${FILECFG}"
+    echo "php/$FILECFG"
 }

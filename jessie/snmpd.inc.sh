@@ -15,7 +15,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     case $1 in
         install)
@@ -39,35 +39,35 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_main (snmpd, $1)"
+    debug "debian_service_main (snmpd, $1)"
 
-    if [[ "$(yaml_getConfig "snmpd.enabled")" != true ]]; then
-        logger_warning "Service 'snmpd' non activé"
+    if [[ "$(Yaml.get "snmpd.enabled")" != true ]]; then
+        warning "Service 'snmpd' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname ${OLIX_MODULE_DEBIAN_CONFIG})/snmpd"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/snmpd"
 
     case $1 in
         install)
-            debian_include_install
-            debian_include_config
-            debian_include_restart
+            debian_service_install
+            debian_service_config
+            debian_service_restart
             ;;
         config)
-            debian_include_config
-            debian_include_restart
+            debian_service_config
+            debian_service_restart
             ;;
         restart)
-            debian_include_restart
+            debian_service_restart
             ;;
         savecfg)
-            debian_include_savecfg
+            debian_service_savecfg
             ;;
         synccfg)
-            debian_include_synccfg
+            debian_service_synccfg
             ;;
     esac
 }
@@ -76,26 +76,26 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (snmpd)"
+    debug "debian_service_install (snmpd)"
 
-    logger_info "Installation des packages SNMPD"
+    info "Installation des packages SNMPD"
     apt-get --yes install snmp snmpd
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer les packages SNMPD"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages SNMPD"
 }
 
 
 ###
 # Configuration du service
 ##
-debian_include_config()
+debian_service_config()
 {
-    logger_debug "debian_include_config (snmpd)"
-    local FILECFG=$(yaml_getConfig "snmpd.filecfg")
+    debug "debian_service_config (snmpd)"
+    local FILECFG=$(Yaml.get "snmpd.filecfg")
 
-    module_debian_backupFileOriginal "/etc/snmp/snmpd.conf"
-    module_debian_installFileConfiguration "${__PATH_CONFIG}/${FILECFG}" "/etc/snmp/snmpd.conf" \
+    Debian.fileconfig.keep "/etc/snmp/snmpd.conf"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/snmp/snmpd.conf" \
         "Mise en place de ${CCYAN}${FILECFG}${CVOID} vers /etc/snmp/snmpd.conf"
 }
 
@@ -103,36 +103,36 @@ debian_include_config()
 ###
 # Redemarrage du service
 ##
-debian_include_restart()
+debian_service_restart()
 {
-    logger_debug "debian_include_restart (snmpd)"
+    debug "debian_service_restart (snmpd)"
 
-    logger_info "Redémarrage du service SNMPD"
+    info "Redémarrage du service SNMPD"
     systemctl restart snmpd
-    [[ $? -ne 0 ]] && logger_critical "Service SNMPD NOT running"
+    [[ $? -ne 0 ]] && critical "Service SNMPD NOT running"
 }
 
 
 ###
 # Sauvegarde de la configuration
 ##
-debian_include_savecfg()
+debian_service_savecfg()
 {
-    logger_debug "debian_include_savecfg (snmpd)"
-    local FILECFG=$(yaml_getConfig "snmpd.filecfg")
+    debug "debian_service_savecfg (snmpd)"
+    local FILECFG=$(Yaml.get "snmpd.filecfg")
 
-    module_debian_backupFileConfiguration "/etc/snmp/snmpd.conf" "${__PATH_CONFIG}/${FILECFG}"
+    Debian.fileconfig.save "/etc/snmp/snmpd.conf" "${__PATH_CONFIG}/$FILECFG"
 }
 
 
 ###
 # Synchronisation de la configuration
 ##
-debian_include_synccfg()
+debian_service_synccfg()
 {
-    logger_debug "debian_include_synccfg (snmpd)"
-    local FILECFG=$(yaml_getConfig "snmpd.filecfg")
+    debug "debian_service_synccfg (snmpd)"
+    local FILECFG=$(Yaml.get "snmpd.filecfg")
 
     echo "snmpd"
-    echo "snmpd/${FILECFG}"
+    echo "snmpd/$FILECFG"
 }

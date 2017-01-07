@@ -6,18 +6,16 @@ Module for oliXsh : Installation and configuration of Debian Server
 
 **Pré-requis** :
 
-Récuperer d'abord les fichiers de configuration nécessaires à l'installation du server
+Initialiser le module qui va récuperer les fichiers de configuration nécessaires à l'installation du server
 
-Command : `olixsh debian synccfg pull <user>@<host>:/<path> <destination>`
+Command : `olixsh debian init <user>@<host>:/<path> <destination> --port=22`
 
-Initialiser le module
+Entrer les informations suivantes si non saisies en paramètre :
 
-Command : `olixsh debian init [--force]`
-
-Entrer les informations suivantes :
-- L'emplacement du fichier de configuration (*/path/file.yml*)
 - Le serveur distant de dépôt de la configuration (*user@host:/path*)
 - Le port de ce même serveur
+- L'emplacement sur le serveur local où seront stockés les fichiers de configuration (*/root*)
+- L'emplacement du fichier de configuration (*/path/file.yml*)
 
 
 

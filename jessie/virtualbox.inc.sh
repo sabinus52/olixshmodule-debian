@@ -14,7 +14,7 @@
 ##
 
 
-debian_include_title()
+debian_service_title()
 {
     echo
     echo -e "${CBLANC} Installation des Tools pour VirtualBox ${CVOID}"
@@ -26,20 +26,20 @@ debian_include_title()
 # Fonction principal
 # @param $1 : action à faire
 ##
-debian_include_main()
+debian_service_main()
 {
-    logger_debug "debian_include_install (virtualbox, $1)"
+    debug "debian_service_install (virtualbox, $1)"
     local ACTION=$1
-    local SERVICE_ENABLED=$(yaml_getConfig "virtualbox.enabled")
+    local SERVICE_ENABLED=$(Yaml.get "virtualbox.enabled")
 
-    if [[ "${SERVICE_ENABLED}" != true ]]; then
-        logger_warning "Service 'virtualbox' non activé"
+    if [[ "$SERVICE_ENABLED" != true ]]; then
+        warning "Service 'virtualbox' non activé"
         return 1
     fi
 
-    case ${ACTION} in
+    case $ACTION in
         install)
-            debian_include_install
+            debian_service_install
             ;;
     esac
 }
@@ -48,14 +48,14 @@ debian_include_main()
 ###
 # Installation du service
 ##
-debian_include_install()
+debian_service_install()
 {
-    logger_debug "debian_include_install (virtualbox)"
+    debug "debian_service_install (virtualbox)"
 
-    logger_info "Installation des packages necessaires à VirtualBox"
+    info "Installation des packages necessaires à VirtualBox"
     #apt-get --yes install dkms build-essential linux-headers-$(uname -r)
     apt-get --yes install virtualbox-guest-utils
-    [[ $? -ne 0 ]] && logger_critical "Impossible d'installer tous les packages"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer tous les packages"
 
     echo -en "Activer le partage automatique ${CJAUNE}[ENTER pour continuer] ?${CVOID} "; read REP
 }
