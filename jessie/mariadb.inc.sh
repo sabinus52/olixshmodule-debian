@@ -1,14 +1,14 @@
 ###
-# Installation et configuration de MySQL
+# Installation et configuration de MariaDB
 # ==============================================================================
-# - Installation des paquets MySQL
+# - Installation des paquets MariaDB
 # - Déplacement des fichiers de l'instance
 # - Installation des fichiers de configuration
 # - Configuration des droits
 # ------------------------------------------------------------------------------
 # mysql:
 #   enabled: 
-#   path:    Chemin des bases mysql
+#   path:    Chemin des bases mariadb
 #   filecfg: Fichier my.cnf à utiliser
 #   script:  Script sql
 #   users:   Liste des utilisateurs à créer
@@ -31,16 +31,16 @@ debian_service_title()
     case $1 in
         install)
             echo
-            echo -e "${CBLANC} Installation de MYSQL ${CVOID}"
+            echo -e "${CBLANC} Installation de MariaDB ${CVOID}"
             echo -e "-------------------------------------------------------------------------------"
             ;;
         config)
             echo
-            echo -e "${CBLANC} Configuration de MYSQL ${CVOID}"
+            echo -e "${CBLANC} Configuration de MariaDB ${CVOID}"
             echo -e "-------------------------------------------------------------------------------"
             ;;
         savecfg)
-            echo -e "${CBLANC} Sauvegarde de la configuration de MYSQL ${CVOID}"
+            echo -e "${CBLANC} Sauvegarde de la configuration de MariaDB ${CVOID}"
             ;;
     esac
 }
@@ -52,14 +52,14 @@ debian_service_title()
 ##
 debian_service_main()
 {
-    debug "debian_service_main (mysql, $1)"
+    debug "debian_service_main (mariadb, $1)"
 
-    if [[ "$(Yaml.get "mysql.enabled")" != true ]]; then
-        warning "Service 'mysql' non activé"
+    if [[ "$(Yaml.get "mariadb.enabled")" != true ]]; then
+        warning "Service 'mariadb' non activé"
         return 1
     fi
 
-    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/mysql"
+    __PATH_CONFIG="$(dirname $OLIX_MODULE_DEBIAN_CONFIG)/mariadb"
 
     case $1 in
         install)
@@ -89,22 +89,22 @@ debian_service_main()
 ##
 debian_service_install()
 {
-    debug "debian_service_install (mysql)"
+    debug "debian_service_install (mariadb)"
 
-    info "Installation des packages MYSQL"
+    info "Installation des packages MariaDB"
     apt-get --yes install mariadb-server
-    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages MYSQL"
+    [[ $? -ne 0 ]] && critical "Impossible d'installer les packages MariaDB"
     
-    local MYSQL_PATH=$(Yaml.get "mysql.path")
-    [[ -z $MYSQL_PATH ]] && return 0
-    echo -e "Création de l'instance MySQL dans ${CCYAN}${MYSQL_PATH}${CVOID}"
+    local MARIADB_PATH=$(Yaml.get "mariadb.path")
+    [[ -z $MARIADB_PATH ]] && return 0
+    echo -e "Création de l'instance MariaDB dans ${CCYAN}${MARIADB_PATH}${CVOID}"
     OLIX_FUNCTION_RETURN=true
-    if [[ -d $MYSQL_PATH ]]; then
-        echo -e "${CJAUNE}ATTENTION !!! L'instance existe déjà dans le répertoire '${MYSQL_PATH}'${CVOID}"
+    if [[ -d $MARIADB_PATH ]]; then
+        echo -e "${CJAUNE}ATTENTION !!! L'instance existe déjà dans le répertoire '${MARIADB_PATH}'${CVOID}"
         Read.confirm "Confirmer pour ECRASEMENT" false
     fi
     # Initialisation du répertoire contenant les données de la base
-    [[ $OLIX_FUNCTION_RETURN == true ]] && debian_service_mysql_path
+    [[ $OLIX_FUNCTION_RETURN == true ]] && debian_service_mariadb_path
 }
 
 
@@ -113,8 +113,8 @@ debian_service_install()
 ##
 debian_service_config()
 {
-    debug "debian_service_config (mysql)"
-    local FILECFG=$(Yaml.get "mysql.filecfg")
+    debug "debian_service_config (mariadb)"
+    local FILECFG=$(Yaml.get "mariadb.filecfg")
 
     # Mise en place du fichier de configuration
     Debian.fileconfig.install \
@@ -124,14 +124,14 @@ debian_service_config()
     debian_service_restart
 
     # Demande du mot de passe
-    Read.password "Mot de passe du serveur MYSQL en tant que root"
+    Read.password "Mot de passe du serveur MariaDB en tant que root"
     MYSQL_PASSWORD=$OLIX_FUNCTION_RETURN
 
     # Execution du script
-    debian_service_mysql_script
+    debian_service_mariadb_script
 
     # Déclaration des utilisateurs
-    debian_service_mysql_users
+    debian_service_mariadb_users
 }
 
 
@@ -140,11 +140,11 @@ debian_service_config()
 ##
 debian_service_restart()
 {
-    debug "debian_service_restart (mysql)"
+    debug "debian_service_restart (mariadb)"
 
-    info "Redémarrage du service MYSQL"
+    info "Redémarrage du service MariaDB"
     systemctl restart mysql
-    [[ $? -ne 0 ]] && critical "Service MYSQL NOT running"
+    [[ $? -ne 0 ]] && critical "Service MariaDB NOT running"
 }
 
 
@@ -153,8 +153,8 @@ debian_service_restart()
 ##
 debian_service_savecfg()
 {
-    debug "debian_service_savecfg (mysql)"
-    local FILECFG=$(Yaml.get "mysql.filecfg")
+    debug "debian_service_savecfg (mariadb)"
+    local FILECFG=$(Yaml.get "mariadb.filecfg")
 
     Debian.fileconfig.save "/etc/mysql/conf.d/$FILECFG" "${__PATH_CONFIG}/$FILECFG"
 }
@@ -165,40 +165,40 @@ debian_service_savecfg()
 ##
 debian_service_synccfg()
 {
-    debug "debian_service_synccfg (mysql)"
-    local FILECFG=$(Yaml.get "mysql.filecfg")
+    debug "debian_service_synccfg (mariadb)"
+    local FILECFG=$(Yaml.get "mariadb.filecfg")
 
-    echo "mysql"
-    echo "mysql/$FILECFG"
+    echo "mariadb"
+    echo "mariadb/$FILECFG"
 }
 
 
 ###
 # Initialisation du répertoire contenant les données de la base
 ##
-function debian_service_mysql_path()
+function debian_service_mariadb_path()
 {
-    debug "debian_service_mysql_path ()"
-    local MYSQL_PATH=$(Yaml.get "mysql.path")
+    debug "debian_service_mariadb_path ()"
+    local MARIADB_PATH=$(Yaml.get "mariadb.path")
 
     systemctl stop mysql
-    info "Initialisation de ${MYSQL_PATH}"
-    if [[ -d $MYSQL_PATH ]]; then
-        debug "rm -rf ${MYSQL_PATH}"
-        rm -rf $MYSQL_PATH/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    info "Initialisation de ${MARIADB_PATH}"
+    if [[ -d $MARIADB_PATH ]]; then
+        debug "rm -rf ${MARIADB_PATH}"
+        rm -rf $MARIADB_PATH/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && critical
     else
-        debug "mkdir -p ${MYSQL_PATH}"
-        mkdir -p $MYSQL_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
+        debug "mkdir -p ${MARIADB_PATH}"
+        mkdir -p $MARIADB_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && critical
     fi
-    debug "chown -R mysql.mysql ${MYSQL_PATH}"
-    chown -R mysql:mysql $MYSQL_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    debug "chown -R mysql.mysql ${MARIADB_PATH}"
+    chown -R mysql:mysql $MARIADB_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && critical
-    debug "cp -rp /var/lib/mysql/ ${MYSQL_PATH}"
-    cp -rp /var/lib/mysql/* $MYSQL_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    debug "cp -rp /var/lib/mysql/ ${MARIADB_PATH}"
+    cp -rp /var/lib/mysql/* $MARIADB_PATH > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && critical
-    echo -e "Regenération de l'instance MySQL : ${CVERT}OK ...${CVOID}"
+    echo -e "Regenération de l'instance MariaDB : ${CVERT}OK ...${CVOID}"
     systemctl start mysql
 }
 
@@ -206,17 +206,17 @@ function debian_service_mysql_path()
 ###
 # Execution du script SQL
 ##
-function debian_service_mysql_script()
+function debian_service_mariadb_script()
 {
-    debug "debian_service_mysql_script ()"
+    debug "debian_service_mariadb_script ()"
 
-    local SCRIPTNAME=$(Yaml.get "mysql.script")
+    local SCRIPTNAME=$(Yaml.get "mariadb.script")
     [[ -z $SCRIPTNAME ]] && return
 
     local SCRIPT=${__PATH_CONFIG}/$SCRIPTNAME
 
     info "Execution du script ${SCRIPTNAME}"
-    [[ ! -f $SCRIPT} ]] && critical "Le fichier ${SCRIPT} n'existe pas"
+    [[ ! -f $SCRIPT ]] && critical "Le fichier ${SCRIPT} n'existe pas"
     cat $SCRIPT | mysql --user=root --password=$MYSQL_PASSWORD > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && critical
     echo -e "Execution du script SQL : ${CVERT}OK ...${CVOID}"
@@ -226,16 +226,16 @@ function debian_service_mysql_script()
 ###
 # Déclaration des utilisateurs et des privilèges
 ##
-function debian_service_mysql_users()
+function debian_service_mariadb_users()
 {
-    debug "debian_service_mysql_users ()"
+    debug "debian_service_mariadb_users ()"
     local USERNAME USERGRANT
 
     for (( I = 1; I < 10; I++ )); do
-        eval "USERNAME=\${OLIX_MODULE_DEBIAN_MYSQL__USERS__USER_${I}__NAME}"
-        USERNAME=$(Yaml.get "mysql.users.user_${I}.name")
+        eval "USERNAME=\${OLIX_MODULE_DEBIAN_MARIADB__USERS__USER_${I}__NAME}"
+        USERNAME=$(Yaml.get "mariadb.users.user_${I}.name")
         [[ -z $USERNAME ]] && break
-        USERGRANT=$(Yaml.get "mysql.users.user_${I}.grant")
+        USERGRANT=$(Yaml.get "mariadb.users.user_${I}.grant")
         USERGRANT=$(echo $USERGRANT | sed "s/\\\\//g")
         info "Privilège de l'utilisateur '${USERNAME}'"
 
@@ -250,7 +250,7 @@ function debian_service_mysql_users()
             [[ $? -ne 0 ]] && critical
         fi
 
-        debug "'${USERGRANT}'"
+        debug "${USERGRANT}"
         mysql --user=root --password=$MYSQL_PASSWORD --execute="$USERGRANT" > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && critical
 

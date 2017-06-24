@@ -20,9 +20,9 @@ OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -cs)
 OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false
 
 # Liste des packages en fonction de l'action à traiter
-OLIX_MODULE_DEBIAN_PACKAGES_INSTALL="network virtualbox vmware users apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
-OLIX_MODULE_DEBIAN_PACKAGES_CONFIG="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
-OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
+OLIX_MODULE_DEBIAN_PACKAGES_INSTALL="network virtualbox vmware users apache php mysql mariadb postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
+OLIX_MODULE_DEBIAN_PACKAGES_CONFIG="apache php mysql mariadb postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
+OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG="apache php mysql mariadb postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
 
 
 
