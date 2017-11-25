@@ -34,8 +34,8 @@ OLIX_MODULE_DEBIAN_SYNC_PORT=
 OLIX_MODULE_DEBIAN_SYNC_SERVER=
 OLIX_MODULE_DEBIAN_SYNC_PATH=
 olixmodule_debian_params_parse "init" $@
-Fileconfig.param.set debian syncserver $OLIX_MODULE_DEBIAN_SYNC_SERVER
-Fileconfig.param.set debian syncport $OLIX_MODULE_DEBIAN_SYNC_PORT
+Fileconfig.param.set debian syncserver $OLIX_MODULE_DEBIAN_SYNC_SERVER || critical "Impossible d'écrire 'syncserver=$OLIX_MODULE_DEBIAN_SYNC_SERVER' dans le fichier debian.conf"
+Fileconfig.param.set debian syncport $OLIX_MODULE_DEBIAN_SYNC_PORT || critical "Impossible d'écrire 'syncport=$OLIX_MODULE_DEBIAN_SYNC_PORT' dans le fichier debian.conf"
 
 # Dossier de destination
 if [[ -z $OLIX_MODULE_DEBIAN_SYNC_PATH ]]; then
