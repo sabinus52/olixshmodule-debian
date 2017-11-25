@@ -175,17 +175,16 @@ function debian_service_apache_modules()
 function debian_service_apache_configs()
 {
     debug "debian_service_apache_configs ()"
-    local CONFIGS=$(Yaml.get "apache.configs")
+    local CONFIGS_AVAILABLE=$(Yaml.get "apache.configs.available")
+    local CONFIGS_ENABLED=$(Yaml.get "apache.configs.enabled")
 
     info "Suppression de la conf actuelle"
-    rm -rf /etc/apache2/conf-enabled/* > ${OLIX_LOGGER_FILE_ERR} 2>&1
+    rm -rf /etc/apache2/conf-enabled/olix* > ${OLIX_LOGGER_FILE_ERR} 2>&1
     [[ $? -ne 0 ]] && critical
-    rm -rf /etc/apache2/conf-available/olix* > ${OLIX_LOGGER_FILE_ERR} 2>&1
-    [[ $? -ne 0 ]] && critical
-    for I in $(ls ${__PATH_CONFIG}/conf/olix*); do
-        Debian.fileconfig.install "$I" "/etc/apache2/conf-available/"
+    for I in $CONFIGS_AVAILABLE; do
+        Debian.fileconfig.install "${__PATH_CONFIG}/conf/$I.conf" "/etc/apache2/conf-available/"
     done
-    for I in $CONFIGS; do
+    for I in $CONFIGS_ENABLED; do
         info "Activation de la conf $I"
         a2enconf $I > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && critical
