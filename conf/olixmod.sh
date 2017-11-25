@@ -19,11 +19,8 @@ OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -cs)
 # Si on doit utiliser tous les packages
 OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false
 
-# Liste des packages en fonction de l'action à traiter
-OLIX_MODULE_DEBIAN_PACKAGES_INSTALL="network virtualbox vmware users apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
-OLIX_MODULE_DEBIAN_PACKAGES_CONFIG="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
-OLIX_MODULE_DEBIAN_PACKAGES_SAVECFG="apache php mysql postgres nfs samba ftp postfix collectd logwatch monit snmpd tools"
-
+! File.exists "$OLIX_MODULE_PATH/debian/conf/$OLIX_MODULE_DEBIAN_VERSION_RELEASE.sh" && critical "Distribution Debian '$OLIX_MODULE_DEBIAN_VERSION_RELEASE' non disponible"
+load "modules/debian/conf/$OLIX_MODULE_DEBIAN_VERSION_RELEASE.sh"
 
 
 ###

@@ -72,6 +72,16 @@ debian_service_install()
 {
     debug "debian_service_install (tools)"
     local TOOLS_APT=$(Yaml.get "tools.apt")
+    local TOOLS_NTP=$(Yaml.get "tools.ntpsync")
+
+    if [[ $TOOLS_NTP == true ]]; then
+        info "Activation de la synchro de l'heure"
+        sed -i "s/\#Servers=/Servers=/g" /etc/systemd/timesyncd.conf
+        systemctl enable systemd-timesyncd.service
+        [[ $? -ne 0 ]] && error "Impossible d'activer la synchro NTP"
+        systemctl start systemd-timesyncd.service
+        [[ $? -ne 0 ]] && error "Impossible d'activer la synchro NTP"
+    fi
 
     if [[ -n $TOOLS_APT ]]; then
         info "Installation des packages additionnels"

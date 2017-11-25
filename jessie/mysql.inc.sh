@@ -236,7 +236,7 @@ function debian_service_mysql_users()
         USERNAME=$(Yaml.get "mysql.users.user_${I}.name")
         [[ -z $USERNAME ]] && break
         USERGRANT=$(Yaml.get "mysql.users.user_${I}.grant")
-        USERGRANT=$(echo $USERGRAN | sed "s/\\\\//g")
+        USERGRANT=$(echo $USERGRANT | sed "s/\\\\//g")
         info "Privilège de l'utilisateur '${USERNAME}'"
 
         # Création de l'utilisateur si celui-ci n'existe pas
@@ -250,7 +250,7 @@ function debian_service_mysql_users()
             [[ $? -ne 0 ]] && critical
         fi
 
-        debug "'${USERGRANT}'"
+        debug "${USERGRANT}"
         mysql --user=root --password=$MYSQL_PASSWORD --execute="$USERGRANT" > ${OLIX_LOGGER_FILE_ERR} 2>&1
         [[ $? -ne 0 ]] && critical
 
