@@ -41,11 +41,16 @@ for I in $OLIX_MODULE_DEBIAN_PACKAGES; do
     info "Installation de '${I}'"
     if ! $(String.list.contains "$OLIX_MODULE_DEBIAN_PACKAGES_INSTALL" $I); then
         warning "Apparement le package '${I}' est inconnu !"
+    elif [[ $OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE == true && $I == "virtualbox" ]]; then
+        warning "L'installation du package 'virtualbox' doit être installé séparement"
     else
         Debian.service.execute $I install
     fi
 done
 
+if [[ $OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE == true ]]; then
+    warning "L'installation du package 'virtualbox' doit être installé séparement"
+fi
 
 ###
 # FIN
