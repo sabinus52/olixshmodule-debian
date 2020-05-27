@@ -83,7 +83,7 @@ debian_service_install()
     local MODULES=$(Yaml.get "php.modules")
 
     info "Installation des packages PHP"
-    apt-get --yes install php $MODULES
+    apt-get --yes install $MODULES
     [[ $? -ne 0 ]] && critical "Impossible d'installer les packages PHP"
 }
 
@@ -95,9 +95,10 @@ debian_service_config()
 {
     debug "debian_service_config (php)"
     local FILECFG=$(Yaml.get "php.filecfg")
+    local PATH_PHP=$(debian_php_getPathPhp)
 
-    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/php/7.3/apache2/conf.d/"
-    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "/etc/php/7.3/cli/conf.d/"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "$PATH_PHP/apache2/conf.d/"
+    Debian.fileconfig.install "${__PATH_CONFIG}/$FILECFG" "$PATH_PHP/cli/conf.d/"
     echo -e "Activation de la conf ${CCYAN}${FILECFG}${CVOID} : ${CVERT}OK ...${CVOID}"
 }
 
@@ -122,8 +123,9 @@ debian_service_savecfg()
 {
     debug "debian_service_savecfg (php)"
     local FILECFG=$(Yaml.get "php.filecfg")
+    local PATH_PHP=$(debian_php_getPathPhp)
 
-    Debian.fileconfig.save "/etc/php/7.0/apache2/conf.d/$FILECFG" "${__PATH_CONFIG}/$FILECFG"
+    Debian.fileconfig.save "$PATH_PHP/apache2/conf.d/$FILECFG" "${__PATH_CONFIG}/$FILECFG"
 }
 
 
@@ -138,4 +140,15 @@ debian_service_synccfg()
 
     echo "php"
     echo "php/$FILECFG"
+}
+
+
+###
+# Retourne le chemin racine de la configuration de php
+##
+debian_php_getPathPhp()
+{
+    local PHP=$(php -i | grep /.+/php.ini -oE)
+    PHP=$(dirname $PHP)
+    echo $(dirname $PHP)   
 }
