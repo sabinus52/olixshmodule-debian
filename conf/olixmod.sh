@@ -19,9 +19,6 @@ OLIX_MODULE_DEBIAN_VERSION_RELEASE=$(lsb_release -cs)
 # Si on doit utiliser tous les packages
 OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE=false
 
-! File.exists "$OLIX_MODULE_PATH/debian/conf/$OLIX_MODULE_DEBIAN_VERSION_RELEASE.sh" && critical "Distribution Debian '$OLIX_MODULE_DEBIAN_VERSION_RELEASE' non disponible"
-load "modules/debian/conf/$OLIX_MODULE_DEBIAN_VERSION_RELEASE.sh"
-
 
 ###
 # Chargement des librairies requis
