@@ -37,6 +37,11 @@ Debian.config.load
 # Tous les packages pour l'installation
 [[ $OLIX_MODULE_DEBIAN_PACKAGES_COMPLETE == true ]] && OLIX_MODULE_DEBIAN_PACKAGES=$OLIX_MODULE_DEBIAN_PACKAGES_INSTALL
 
+# Variables d'environement global
+OLIX_ENVNAME=$(Yaml.get "envname")
+info "Environnement : ENVNAME=${OLIX_ENVNAME}"
+echo "export ENVNAME=${OLIX_ENVNAME}" > /etc/profile.d/olixsh.sh
+
 for I in $OLIX_MODULE_DEBIAN_PACKAGES; do
     info "Installation de '${I}'"
     if ! $(String.list.contains "$OLIX_MODULE_DEBIAN_PACKAGES_INSTALL" $I); then
